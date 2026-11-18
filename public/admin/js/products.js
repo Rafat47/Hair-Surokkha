@@ -2,7 +2,7 @@
 // Saves through PUT /api/admin/products/:id. Images can be uploaded or entered as links.
 
 (function () {
-  const list = document.getElementById('product-list');
+  const listEl = document.getElementById('product-list');
   const pageMessage = document.getElementById('page-message');
 
   function el(tag, attrs = {}, children = []) {
@@ -13,8 +13,8 @@
       else if (value === true) node.setAttribute(key, '');
       else if (value !== false && value != null) node.setAttribute(key, value);
     }
-    const list = Array.isArray(children) ? children : [children];
-    for (const child of list) {
+    const items = Array.isArray(children) ? children : [children];
+    for (const child of items) {
       if (child == null) continue;
       node.append(child instanceof Node ? child : document.createTextNode(String(child)));
     }
@@ -39,7 +39,7 @@
     ]);
   }
 
-  // Same rules as the checkout upsell (see pricing.js offerPercent)
+  // Same rule as the checkout upsell (pricing.js offerPercent)
   function upsellPercent(category, regular, sale, bundle) {
     if (category === 'roller') {
       return sale > 0 ? Math.round(((sale - bundle) / sale) * 100) : 0;
@@ -85,8 +85,8 @@
     const activeInput = el('input', { type: 'checkbox' });
     activeInput.checked = product.isActive !== false;
 
+    // Live upsell hint
     const hint = el('p', { class: 'hint-pill' });
-
     function updateHint() {
       const regular = Number(regularInput.value);
       const sale = Number(saleInput.value);
@@ -96,9 +96,7 @@
       hint.textContent = isRoller
         ? `Shown at checkout when a customer has Minoxidil: "Add a derma roller to get ${pct}% off"`
         : `Shown at checkout when a customer has Derma Roller: "Add another product to get ${pct}% off"`;
-    };
     }
-
     [regularInput, saleInput, bundleInput].forEach(input => input.addEventListener('input', updateHint));
     updateHint();
 
@@ -133,9 +131,7 @@
         updateThumb();
         uploadStatus.textContent = 'Image added. Click Save to keep it.';
       } catch (err) {
-        if (err.message !== 'Not logged in') {
-          uploadStatus.textContent = err.message;
-        }
+        if (err.message !== 'Not logged in') uploadStatus.textContent = err.message;
       } finally {
         fileInput.value = '';
       }
@@ -175,10 +171,8 @@
 
     const headTitle = el('div', { class: 'product-admin-title' }, [
       el('h2', {}, product.title),
-      el('p', {}, product.category === 'roller' ? 'Derma Roller' : 'Minoxidil')
+      el('p', {}, isRoller ? 'Derma Roller' : 'Minoxidil')
     ]);
-
-    // Keep the heading in sync with the title field
     titleInput.addEventListener('input', () => {
       headTitle.querySelector('h2').textContent = titleInput.value || 'Untitled';
     });
@@ -209,17 +203,17 @@
   async function load() {
     try {
       const data = await AdminApi.get('/api/admin/products');
-      if (!data.products.length) {
-        list.replaceChildren(el('p', {}, 'No products yet.'));
+      if (!data.products || !data.products.length) {
+        listEl.replaceChildren(el('p', {}, 'No products yet.'));
         return;
       }
-      list.replaceChildren(...data.products.map(productCard));
+      listEl.replaceChildren(...data.products.map(productCard));
     } catch (err) {
       if (err.message !== 'Not logged in') {
-        setPageMessage('Could not load products. Please refresh the page.', 'error');
+        setPageMessage('Could not load products: ' + err.message, 'error');
       }
     }
   }
 
   load();
-)();
+})();
