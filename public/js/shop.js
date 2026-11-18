@@ -95,9 +95,10 @@
     ];
 
     // Roller shows the bundle price as a note, since the real price depends on the cart
-    if (product.bundlePrice != null) {
+    const bundle = product.logicValues && product.logicValues.bundlePrice;
+    if (product.businessLogic === 'bundle-price' && bundle != null) {
       children[1].append(
-        el('p', { class: 'price-note' }, `${money(product.bundlePrice)} when bought with Minoxidil`)
+        el('p', { class: 'price-note' }, `${money(bundle)} when bought with another product`)
       );
     }
 

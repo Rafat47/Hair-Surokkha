@@ -22,6 +22,7 @@ const adminProductsRouter = require('./src/routes/adminProducts');
 const adminOrdersRouter = require('./src/routes/adminOrders');
 const adminSettingsRouter = require('./src/routes/adminSettings');
 const productStore = require('./src/services/productStore');
+const { migrateProducts } = require('./src/services/migrateProducts');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -107,6 +108,7 @@ app.use((err, req, res, next) => {
 async function start() {
   await connectDB();
   await seedDefaults();
+  await migrateProducts();
   await productStore.init();
   await ensureAdminAccount();
   app.listen(PORT, () => {

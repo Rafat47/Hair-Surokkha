@@ -5,6 +5,8 @@ const path = require('path');
 const multer = require('multer');
 const Product = require('../models/Product');
 const productStore = require('../services/productStore');
+const business = require('../business');
+const { toNumber } = require('../business/helpers');
 
 const router = express.Router();
 
@@ -35,14 +37,7 @@ function text(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function toNumber(value) {
-  if (typeof value === 'string') value = value.trim();
-  if (value === '' || value == null) return NaN;
-  return Number(value);
-}
-
-// Every field is required when adding or editing a product.
-// Every field is required, except the bundle price, which may be left empty.
+// Checks the product fields. The business logic fields are checked by the logic file itself.
 function validateProduct(body) {
   const errors = {};
 
@@ -51,8 +46,7 @@ function validateProduct(body) {
   const description = text(body.description);
   const regularPrice = toNumber(body.regularPrice);
   const salePrice = toNumber(body.salePrice);
-  const bundleEmpty = body.bundlePrice == null || String(body.bundlePrice).trim() === '';
-  const bundleValue = toNumber(body.bundlePrice);
+  const businessLogic = text(body.businessLogic) || 'none';
   const images = Array.isArray(body.images)
     ? body.images.map(item => text(item)).filter(Boolean)
     : [];
@@ -77,18 +71,6 @@ function validateProduct(body) {
     errors.salePrice = 'Sale price cannot be higher than regular price';
   }
 
-  // Bundle price is optional. Empty means no bundle.
-  let bundlePrice = null;
-  if (!bundleEmpty) {
-    if (!Number.isFinite(bundleValue) || bundleValue < 0) {
-      errors.bundlePrice = 'Bundle price must be a number, or left empty';
-    } else if (!errors.salePrice && bundleValue > salePrice) {
-      errors.bundlePrice = 'Bundle price cannot be higher than sale price';
-    } else {
-      bundlePrice = bundleValue;
-    }
-  }
-
   if (images.length === 0) {
     errors.images = 'Add at least one image';
   } else if (images.length > 10) {
@@ -97,9 +79,14 @@ function validateProduct(body) {
     errors.images = 'Each image must be a link starting with / or http';
   }
 
+  const base = { category, title, description, regularPrice, salePrice, images, isActive };
+
+  const logic = business.validateLogic(businessLogic, body.logicValues, base);
+  Object.assign(errors, logic.errors);
+
   return {
     errors,
-    data: { category, title, description, regularPrice, salePrice, bundlePrice, images, isActive }
+    data: { ...base, businessLogic, logicValues: logic.values }
   };
 }
 
@@ -113,6 +100,11 @@ function handleError(err, res, message) {
   console.error(err);
   res.status(500).json({ ok: false, message });
 }
+
+// GET /api/admin/products/business-logics -> dropdown options and their fields
+router.get('/business-logics', (req, res) => {
+  res.json({ ok: true, logics: business.listLogics() });
+});
 
 // GET /api/admin/products -> all products, active and hidden
 router.get('/', async (req, res) => {
@@ -129,7 +121,7 @@ router.post('/', async (req, res) => {
   try {
     const { errors, data } = validateProduct(req.body);
     if (Object.keys(errors).length) {
-      return res.status(400).json({ ok: false, message: 'Please fill in every field', errors });
+      return res.status(400).json({ ok: false, message: 'Please check the form', errors });
     }
 
     const product = await Product.create(data);
@@ -167,7 +159,7 @@ router.put('/:id', async (req, res) => {
 
     const { errors, data } = validateProduct(req.body);
     if (Object.keys(errors).length) {
-      return res.status(400).json({ ok: false, message: 'Please fill in every field', errors });
+      return res.status(400).json({ ok: false, message: 'Please check the form', errors });
     }
 
     Object.assign(product, data);

@@ -1,5 +1,6 @@
 // Admin products page: add, edit and delete any product.
-// Every field is required. Products are saved through /api/admin/products.
+// The business logic dropdown lists the files in src/business/logics.
+// Choosing one shows the fields that logic needs.
 
 (function () {
   const listEl = document.getElementById('product-list');
@@ -7,6 +8,8 @@
   const newButton = document.getElementById('new-product-button');
   const newWrap = document.getElementById('new-product-wrap');
   const newSlot = document.getElementById('new-product-slot');
+
+  let logicList = [];
 
   function el(tag, attrs = {}, children = []) {
     const node = document.createElement(tag);
@@ -74,18 +77,20 @@
     newSlot.replaceChildren();
   }
 
-  // Builds one card. product = null means a new product.
+  // product = null means a new product
   function buildForm(product) {
     const isNew = !product;
     let current = product;
 
+    const initialKey = (current && current.businessLogic) || 'none';
+    const initialValues = (current && current.logicValues) || {};
+
     const inputs = {
-      category: el('input', { type: 'text', maxlength: 40, placeholder: 'e.g. minoxidil, cream, soap' }),
+      category: el('input', { type: 'text', maxlength: 40, placeholder: 'e.g. skincare, hair, soap' }),
       title: el('input', { type: 'text', maxlength: 120 }),
       description: el('textarea', { rows: 4, maxlength: 5000 }),
       regularPrice: el('input', { type: 'number', min: 0, step: 1 }),
       salePrice: el('input', { type: 'number', min: 0, step: 1 }),
-      bundlePrice: el('input', { type: 'number', min: 0, step: 1 }),
       images: el('textarea', { rows: 3, placeholder: '/uploads/your-image.jpg' }),
       isActive: el('input', { type: 'checkbox' })
     };
@@ -95,7 +100,6 @@
     inputs.description.value = val(current && current.description);
     inputs.regularPrice.value = val(current && current.regularPrice);
     inputs.salePrice.value = val(current && current.salePrice);
-    inputs.bundlePrice.value = val(current && current.bundlePrice);
     inputs.images.value = ((current && current.images) || []).join('\n');
     inputs.isActive.checked = isNew ? true : current.isActive !== false;
 
@@ -103,6 +107,40 @@
     inputs.title.addEventListener('input', () => {
       heading.textContent = inputs.title.value.trim() || 'Untitled';
     });
+
+    // Business logic dropdown and its fields
+    const logicSelect = el('select', {});
+    logicList.forEach(logic => {
+      const option = el('option', { value: logic.key }, logic.label);
+      if (logic.key === initialKey) option.selected = true;
+      logicSelect.append(option);
+    });
+
+    let logicInputs = {};
+    const logicBox = el('div', { class: 'logic-fields full' });
+
+    function renderLogicFields() {
+      const key = logicSelect.value;
+      const logic = logicList.find(l => l.key === key);
+      const previous = logicInputs;
+      logicInputs = {};
+
+      const rows = (logic ? logic.fields : []).map(f => {
+        const input = el('input', { type: 'number', min: 0, step: 1 });
+        if (previous[f.name]) {
+          input.value = previous[f.name].value;
+        } else if (key === initialKey) {
+          input.value = val(initialValues[f.name]);
+        }
+        logicInputs[f.name] = input;
+        return field(f.label, input);
+      });
+
+      logicBox.replaceChildren(...rows);
+    }
+
+    logicSelect.addEventListener('change', renderLogicFields);
+    renderLogicFields();
 
     // Thumbnail shows the first image
     const thumb = el('img', { class: 'product-admin-thumb', alt: '' });
@@ -129,9 +167,9 @@
       uploadStatus.textContent = 'Uploading...';
       try {
         const url = await uploadImage(file);
-        const current = inputs.images.value.split('\n').map(s => s.trim()).filter(Boolean);
-        current.push(url);
-        inputs.images.value = current.join('\n');
+        const list = inputs.images.value.split('\n').map(s => s.trim()).filter(Boolean);
+        list.push(url);
+        inputs.images.value = list.join('\n');
         updateThumb();
         uploadStatus.textContent = 'Image added. Click Save to keep it.';
       } catch (err) {
@@ -144,13 +182,19 @@
     const message = el('p', { class: 'form-message' });
 
     function payload() {
+      const logicValues = {};
+      Object.entries(logicInputs).forEach(([name, input]) => {
+        logicValues[name] = input.value;
+      });
+
       return {
         category: inputs.category.value.trim(),
         title: inputs.title.value.trim(),
         description: inputs.description.value.trim(),
         regularPrice: inputs.regularPrice.value,
         salePrice: inputs.salePrice.value,
-        bundlePrice: inputs.bundlePrice.value,
+        businessLogic: logicSelect.value,
+        logicValues,
         images: inputs.images.value.split('\n').map(s => s.trim()).filter(Boolean),
         isActive: inputs.isActive.checked
       };
@@ -231,8 +275,8 @@
         field('Description', inputs.description, 'full'),
         field('Regular price (crossed out), Tk', inputs.regularPrice),
         field('Sale price, Tk', inputs.salePrice),
-        field('Bundle price, Tk (optional)', inputs.bundlePrice),
-        el('div', { class: 'field-hint full' }, 'Bundle price is optional. Leave it empty if this product has no bundle. When a customer buys it together with another product, the bundle price is charged.'),
+        field('Business logic', logicSelect, 'full'),
+        logicBox,
         field('Image links (one per line)', inputs.images, 'full'),
         el('div', { class: 'field full' }, [
           el('label', {}, 'Upload an image (JPG, PNG or WebP, max 3 MB)'),
@@ -251,14 +295,19 @@
 
   async function loadProducts() {
     try {
-      const data = await AdminApi.get('/api/admin/products');
+      const [logicData, productData] = await Promise.all([
+        AdminApi.get('/api/admin/products/business-logics'),
+        AdminApi.get('/api/admin/products')
+      ]);
 
-      if (!data.products.length) {
+      logicList = logicData.logics;
+
+      if (!productData.products.length) {
         listEl.replaceChildren(el('p', {}, 'No products yet. Click "Add product" to create one.'));
         return;
       }
 
-      listEl.replaceChildren(...data.products.map(buildForm));
+      listEl.replaceChildren(...productData.products.map(buildForm));
     } catch (err) {
       if (!isAuthError(err)) {
         setPageMessage('Could not load products: ' + err.message, 'error');

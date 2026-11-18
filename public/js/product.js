@@ -104,8 +104,9 @@
     $('price-regular').textContent = money(product.regularPrice);
     $('price-sale').textContent = money(product.salePrice);
 
-    if (product.bundlePrice != null) {
-      $('price-note').textContent = `${money(product.bundlePrice)} when bought with Minoxidil`;
+    const bundle = product.logicValues && product.logicValues.bundlePrice;
+    if (product.businessLogic === 'bundle-price' && bundle != null) {
+      $('price-note').textContent = `${money(bundle)} when bought with another product`;
       $('price-note').hidden = false;
     }
 
