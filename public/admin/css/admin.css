@@ -128,12 +128,21 @@ body.admin-body {
 }
 
 .admin-brand {
+    display: block;
     color: var(--color-white);
     font-size: 22px;
     font-weight: 800;
     padding: 0 12px 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     margin-bottom: 16px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.admin-brand:hover {
+    color: var(--color-white);
+    opacity: 0.85;
+    text-decoration: none;
 }
 
 .admin-nav {
