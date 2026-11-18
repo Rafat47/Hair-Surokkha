@@ -1,19 +1,23 @@
 // Home page product carousel.
 // Loads every available (active) product from /api/products, renders one card
 // per product, and auto-scrolls the cards from left to right (right to left).
-// The Buy button adds the product to the cart and goes straight to checkout.
+// Each card is a full-image square that links to the product detail page;
+// the product name is shown under the card.
+// Supports fast touch swiping with momentum-like flick detection.
 
 (function () {
-  const CURRENCY = 'BDT';
   const AUTOPLAY_MS = 3500;   // pause between slides
-  const SCROLL_MS = 650;      // slide animation duration
+  const SCROLL_MS = 400;      // slide animation duration
+  const SNAP_MS = 280;        // snap duration after a finger swipe
   const GAP = 20;             // must match --carousel-gap in home.css
 
+  const carousel = document.getElementById('product-carousel');
+  const viewport = document.querySelector('#product-carousel .carousel-viewport');
   const track = document.getElementById('carousel-track');
   const dotsBox = document.getElementById('carousel-dots');
   const prevBtn = document.querySelector('.carousel-prev');
   const nextBtn = document.querySelector('.carousel-next');
-  if (!track) return;
+  if (!track || !viewport) return;
 
   let cards = [];
   let index = 0;
@@ -34,62 +38,26 @@
     return node;
   }
 
-  function money(amount) {
-    return `${Number(amount || 0).toLocaleString('en-US')} Tk`;
-  }
-
-  function shortDescription(text) {
-    const clean = (text || '').trim();
-    if (!clean) return '';
-    return clean.length > 110 ? clean.slice(0, 107).trimEnd() + '\u2026' : clean;
-  }
-
   function buildCard(product) {
-    const imageBox = el('div', { class: 'carousel-card-image' },
-      product.images && product.images[0]
-        ? [el('img', { src: product.images[0], alt: product.title, loading: 'lazy' })]
-        : []
-    );
+    const href = `/product.html?id=${encodeURIComponent(product._id)}`;
 
-    const priceRow = el('div', { class: 'carousel-card-price' }, [
-      el('span', { class: 'price-regular' }, money(product.regularPrice)),
-      el('span', { class: 'price-sale' }, money(product.salePrice))
+    // The whole card is the product image and links to the product page.
+    const imageLink = el('a', { class: 'carousel-card-image-link', href }, [
+      el('div', { class: 'carousel-card-image' },
+        product.images && product.images[0]
+          ? [el('img', { src: product.images[0], alt: product.title, loading: 'lazy' })]
+          : []
+      )
     ]);
 
-    // Buy button sits in the right corner of the card footer
-    const buyBtn = el('button', {
-      type: 'button',
-      class: 'btn btn-primary carousel-buy',
-      onclick: () => {
-        PicasoCart.add(product.category, 1);
-        if (window.PicasoTracking) {
-          PicasoTracking.track('AddToCart', {
-            content_ids: [product._id],
-            content_type: 'product',
-            content_name: product.title,
-            value: product.salePrice,
-            currency: CURRENCY,
-            num_items: 1
-          });
-        }
-        window.location.href = '/checkout.html';
-      }
-    }, 'Buy');
+    // Product name shown below the card.
+    const name = el('a', {
+      class: 'carousel-card-name',
+      href,
+      title: product.title
+    }, product.title);
 
-    const footer = el('div', { class: 'carousel-card-footer' }, [
-      el('a', { class: 'carousel-card-link', href: `/product.html?id=${encodeURIComponent(product._id)}` }, 'Details'),
-      buyBtn
-    ]);
-
-    return el('article', { class: 'carousel-card' }, [
-      imageBox,
-      el('div', { class: 'carousel-card-body' }, [
-        el('h3', { class: 'carousel-card-title' }, product.title),
-        el('p', { class: 'carousel-card-desc' }, shortDescription(product.description)),
-        priceRow
-      ]),
-      footer
-    ]);
+    return el('article', { class: 'carousel-card' }, [imageLink, name]);
   }
 
   function cardStep() {
@@ -100,8 +68,16 @@
   function maxIndex() {
     if (!cards.length) return 0;
     // How many cards fit fully in the viewport at once
-    const visible = Math.max(1, Math.floor((track.parentElement.clientWidth + GAP) / cardStep()));
+    const visible = Math.max(1, Math.floor((viewport.clientWidth + GAP) / cardStep()));
     return Math.max(0, cards.length - visible);
+  }
+
+  // Extra padding on each side of the track so the first/last card can be
+  // scrolled into the centre of the viewport (used on desktop). The CSS sets
+  // .carousel-track { padding-left: <half a card> } above 768px; we read it
+  // from the element so JS and CSS always match.
+  function edgePad() {
+    return parseFloat(getComputedStyle(track).paddingLeft) || 0;
   }
 
   function renderDots() {
@@ -123,9 +99,9 @@
     dotsBox.replaceChildren(...dots);
   }
 
-  function applyPosition(animate) {
-    const offset = -(index * cardStep());
-    track.style.transition = animate ? `transform ${SCROLL_MS}ms ease` : 'none';
+  function applyPosition(animate, duration) {
+    const offset = edgePad() - (index * cardStep());
+    track.style.transition = animate ? `transform ${duration || SCROLL_MS}ms cubic-bezier(0.22, 0.61, 0.36, 1)` : 'none';
     track.style.transform = `translateX(${offset}px)`;
     renderDots();
   }
@@ -136,6 +112,97 @@
     applyPosition(true);
     if (userAction) restartAutoplay();
   }
+
+  // ---- Touch / swipe support: drag the track with the finger and snap fast ----
+  let dragging = false;
+  let moved = false;
+  let startX = 0;
+  let startY = 0;
+  let startOffset = 0;
+  let lastX = 0;
+  let lastTime = 0;
+  let velocity = 0; // px per ms
+
+  function currentOffset() {
+    return edgePad() - (index * cardStep());
+  }
+
+  viewport.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    dragging = true;
+    moved = false;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startOffset = currentOffset();
+    lastX = startX;
+    lastTime = e.timeStamp;
+    velocity = 0;
+    stopAutoplay();
+    track.style.transition = 'none';
+  }, { passive: true });
+
+  viewport.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
+
+    if (!moved) {
+      const dx = Math.abs(x - startX);
+      const dy = Math.abs(y - startY);
+      if (dy > dx) {          // vertical scroll intent – don't hijack it
+        dragging = false;
+        return;
+      }
+      if (dx > 8) {
+        moved = true;
+        if (e.cancelable) e.preventDefault(); // take over horizontal panning
+      } else {
+        return;
+      }
+    }
+
+    const dt = e.timeStamp - lastTime;
+    if (dt > 0) velocity = (x - lastX) / dt;
+    lastX = x;
+    lastTime = e.timeStamp;
+
+    let offset = startOffset + (x - startX);
+    const min = edgePad() - maxIndex() * cardStep(); // fully clamped position
+    const maxOff = edgePad();
+    // Rubber-band resistance past the ends
+    if (offset > maxOff) offset = maxOff + (offset - maxOff) * 0.3;
+    else if (offset < min) offset = min + (offset - min) * 0.3;
+    track.style.transform = `translateX(${offset}px)`;
+  }, { passive: false });
+
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (!moved) { restartAutoplay(); return; }
+
+    const step = cardStep();
+    const cur = startOffset + (lastX - startX);
+    // Project momentum forward for a snappy flick feel
+    const projected = cur + velocity * 120;
+    let newIndex = Math.round((edgePad() - projected) / step);
+    const max = maxIndex();
+    newIndex = Math.max(0, Math.min(max, newIndex));
+    index = newIndex;
+    applyPosition(true, SNAP_MS);
+    restartAutoplay();
+  }
+
+  viewport.addEventListener('touchend', endDrag);
+  viewport.addEventListener('touchcancel', endDrag);
+
+  // Prevent accidental navigation when the user swiped instead of tapped.
+  track.addEventListener('click', (e) => {
+    if (moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      moved = false;
+    }
+  }, true);
 
   function startAutoplay() {
     stopAutoplay();
@@ -182,7 +249,6 @@
   if (prevBtn) prevBtn.addEventListener('click', () => goTo(index - 1, true));
   if (nextBtn) nextBtn.addEventListener('click', () => goTo(index + 1, true));
 
-  const carousel = document.getElementById('product-carousel');
   if (carousel) {
     carousel.addEventListener('mouseenter', stopAutoplay);
     carousel.addEventListener('mouseleave', startAutoplay);
