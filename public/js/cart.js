@@ -1,5 +1,5 @@
 // Cart stored in the browser (localStorage).
-// It holds only categories and quantities. Prices always come from the server.
+// It holds only product ids and quantities. Prices always come from the server.
 
 (function () {
   const KEY = 'picaso_cart';
@@ -35,33 +35,33 @@
       return read().reduce((sum, item) => sum + item.quantity, 0);
     },
 
-    add(category, quantity = 1) {
+    add(id, quantity = 1) {
       const items = read();
-      const existing = items.find(i => i.category === category);
+      const existing = items.find(i => i.id === id);
       if (existing) {
         existing.quantity = clampQty(existing.quantity + quantity);
       } else {
-        items.push({ category, quantity: clampQty(quantity) });
+        items.push({ id, quantity: clampQty(quantity) });
       }
       write(items);
     },
 
-    setQuantity(category, quantity) {
+    setQuantity(id, quantity) {
       const items = read().map(i =>
-        i.category === category ? { ...i, quantity: clampQty(quantity) } : i
+        i.id === id ? { ...i, quantity: clampQty(quantity) } : i
       );
       write(items);
     },
 
     // delta is +1 or -1. Quantity never goes below 1 here. Use remove() to delete.
-    changeQuantity(category, delta) {
-      const item = read().find(i => i.category === category);
+    changeQuantity(id, delta) {
+      const item = read().find(i => i.id === id);
       if (!item) return;
-      Cart.setQuantity(category, item.quantity + delta);
+      Cart.setQuantity(id, item.quantity + delta);
     },
 
-    remove(category) {
-      write(read().filter(i => i.category !== category));
+    remove(id) {
+      write(read().filter(i => i.id !== id));
     },
 
     clear() {

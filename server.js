@@ -8,6 +8,7 @@ const MongoStore = require('connect-mongo');
 
 const connectDB = require('./src/config/db');
 const { seedDefaults } = require('./src/config/seed');
+const { refreshProductsFile } = require('./src/services/productsFile');
 const { ensureAdminAccount } = require('./src/services/adminAccount');
 const { requireAdminApi } = require('./src/middleware/requireAdmin');
 
@@ -107,6 +108,8 @@ async function start() {
   await connectDB();
   await seedDefaults();
   await ensureAdminAccount();
+  // Pull every product from the database and keep a JSON snapshot for the site.
+  await refreshProductsFile();
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
   });

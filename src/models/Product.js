@@ -2,12 +2,14 @@ const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema(
   {
-    // 'minoxidil' or 'roller'. Pricing rules depend on this.
+    // Free text (e.g. 'minoxidil', 'roller'). Products are identified by _id;
+    // the id is always unique because MongoDB generates it.
     category: {
       type: String,
-      enum: ['minoxidil', 'roller'],
       required: true,
-      unique: true
+      trim: true,
+      lowercase: true,
+      maxlength: 40
     },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: '' },
@@ -24,4 +26,22 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Product', productSchema);
+// Remove the old "one product per category" unique index that existed in
+// earlier versions. Without this, MongoDB would refuse to add new products.
+async function dropLegacyCategoryIndex() {
+  try {
+    const indexes = await productSchema.collection.indexes();
+    const legacy = indexes.find(i => i.unique && i.key && Object.keys(i.key).join(',') === 'category');
+    if (legacy) {
+      await productSchema.collection.dropIndex(legacy.name);
+      console.log('Removed old unique index on product category');
+    }
+  } catch (err) {
+    // Collection may not exist yet; nothing to do.
+  }
+}
+
+const Product = mongoose.model('Product', productSchema);
+Product.dropLegacyCategoryIndex = dropLegacyCategoryIndex;
+
+module.exports = Product;
