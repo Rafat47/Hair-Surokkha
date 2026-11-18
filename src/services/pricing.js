@@ -1,6 +1,7 @@
 // All prices are calculated on the server.
-// The browser sends only product categories and quantities.
+// The browser sends only product IDs (or 'minoxidil' / 'roller') and quantities.
 
+const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Settings = require('../models/Settings');
 
@@ -10,6 +11,12 @@ async function getSettings() {
     settings = await Settings.create({ key: 'main' });
   }
   return settings;
+}
+
+// Products added from the admin panel have no special bundle rules:
+// quantity times salePrice, with regularPrice kept for display.
+function otherTotal(quantity, product) {
+  return product.salePrice * quantity;
 }
 
 // Minoxidil price for a given quantity.
@@ -69,24 +76,66 @@ function upsellFor(minoxidilQty, rollerQty, minoxidil, roller) {
   return suggestions;
 }
 
-// Input: [{ category: 'minoxidil' | 'roller', quantity: number }]
+// Cart lines are keyed by product id. For backward compatibility the two
+// bundle products can also be sent as the old categories 'minoxidil'/'roller'.
+// Input: [{ id | category, quantity }]
 // Output: full cart breakdown with items, subtotal, delivery and total.
 async function calculateCart(cartItems, isInsideDhaka) {
   const settings = await getSettings();
 
-  const [minoxidil, roller] = await Promise.all([
-    Product.findOne({ category: 'minoxidil', isActive: true }),
-    Product.findOne({ category: 'roller', isActive: true })
-  ]);
-
-  let minoxidilQty = 0;
-  let rollerQty = 0;
-
+  // Merge quantities per key first, then load every product once.
+  const wanted = new Map();
   for (const item of cartItems || []) {
     const qty = Math.max(0, parseInt(item.quantity, 10) || 0);
-    if (item.category === 'minoxidil') minoxidilQty += qty;
-    if (item.category === 'roller') rollerQty += qty;
+    if (!qty) continue;
+
+    let key = String(item.id || '').trim();
+    if (!mongoose.Types.ObjectId.isValid(key)) {
+      // Old format: category name instead of an id
+      if (item.category === 'minoxidil' || item.category === 'roller') {
+        key = `category:${item.category}`;
+      } else {
+        continue;
+      }
+    }
+    wanted.set(key, (wanted.get(key) || 0) + qty);
   }
+
+  const ids = [...wanted.keys()].filter(k => !k.startsWith('category:'));
+  const categories = [...wanted.keys()].filter(k => k.startsWith('category:'))
+    .map(k => k.slice('category:'.length));
+
+  const found = await Product.find({
+    isActive: true,
+    $or: [
+      ids.length ? { _id: { $in: ids } } : null,
+      categories.length ? { category: { $in: categories } } : null
+    ].filter(Boolean)
+  }).lean();
+
+  // Resolve the legacy category keys to real documents
+  for (const doc of found) {
+    const legacyKey = `category:${doc.category}`;
+    if (wanted.has(legacyKey) && (doc.category === 'minoxidil' || doc.category === 'roller')) {
+      const extra = wanted.get(legacyKey);
+      wanted.delete(legacyKey);
+      wanted.set(String(doc._id), (wanted.get(String(doc._id)) || 0) + extra);
+    }
+  }
+
+  let minoxidil = null;
+  let roller = null;
+  const others = [];
+
+  for (const doc of found) {
+    if (!wanted.has(String(doc._id))) continue;
+    if (doc.category === 'minoxidil') minoxidil = doc;
+    else if (doc.category === 'roller') roller = doc;
+    else others.push(doc);
+  }
+
+  const minoxidilQty = minoxidil ? (wanted.get(String(minoxidil._id)) || 0) : 0;
+  const rollerQty = roller ? (wanted.get(String(roller._id)) || 0) : 0;
 
   const items = [];
 
@@ -94,6 +143,7 @@ async function calculateCart(cartItems, isInsideDhaka) {
     const lineTotal = minoxidilTotal(minoxidilQty, minoxidil, settings);
     items.push({
       category: 'minoxidil',
+      productId: minoxidil._id,
       title: minoxidil.title,
       quantity: minoxidilQty,
       unitPrice: Math.round(lineTotal / minoxidilQty),
@@ -108,10 +158,25 @@ async function calculateCart(cartItems, isInsideDhaka) {
       : roller.salePrice;
     items.push({
       category: 'roller',
+      productId: roller._id,
       title: roller.title,
       quantity: rollerQty,
       unitPrice,
       lineTotal: rollerTotal(rollerQty, roller, hasMinoxidil)
+    });
+  }
+
+  for (const product of others) {
+    const qty = wanted.get(String(product._id)) || 0;
+    if (qty <= 0) continue;
+    const lineTotal = otherTotal(qty, product);
+    items.push({
+      category: 'other',
+      productId: product._id,
+      title: product.title,
+      quantity: qty,
+      unitPrice: product.salePrice,
+      lineTotal
     });
   }
 
@@ -134,6 +199,7 @@ async function calculateCart(cartItems, isInsideDhaka) {
 module.exports = {
   getSettings,
   calculateCart,
+  otherTotal,
   offerPercent,
   minoxidilTotal,
   rollerTotal,
