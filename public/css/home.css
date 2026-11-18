@@ -262,6 +262,7 @@
     overflow: hidden;
     flex: 1;
     padding: 6px 2px 14px;
+    touch-action: pan-y; /* let us handle horizontal swiping ourselves */
 }
 
 .carousel-track {
@@ -275,6 +276,13 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
+}
+
+/* Desktop: the carousel starts (and centres) from the middle, not the left */
+@media (min-width: 769px) {
+    .carousel-track {
+        padding-left: calc((100% - (var(--carousel-gap) * 4)) / 10);
+    }
 }
 
 /* Square image card with very round corners; whole card links to the product page */
@@ -379,15 +387,12 @@
 
 @media (max-width: 768px) {
     .carousel-card {
-        flex-basis: calc((100% - var(--carousel-gap)) / 2);
+        /* ~2.5 cards visible on a phone */
+        flex-basis: calc((100% - var(--carousel-gap)) / 2.5);
     }
 }
 
 @media (max-width: 520px) {
-    .carousel-card {
-        flex-basis: 100%;
-    }
-
     .carousel-arrow {
         display: none;
     }
