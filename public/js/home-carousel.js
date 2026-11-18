@@ -61,7 +61,7 @@
       type: 'button',
       class: 'btn btn-primary carousel-buy',
       onclick: () => {
-        PicasoCart.add(product.category, 1);
+        PicasoCart.add(product._id, 1);
         if (window.PicasoTracking) {
           PicasoTracking.track('AddToCart', {
             content_ids: [product._id],

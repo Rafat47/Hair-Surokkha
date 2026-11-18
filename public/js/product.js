@@ -105,7 +105,7 @@
     $('price-sale').textContent = money(product.salePrice);
 
     if (product.bundlePrice != null) {
-      $('price-note').textContent = `${money(product.bundlePrice)} when bought with Minoxidil`;
+      $('price-note').textContent = `${money(product.bundlePrice)} when bought together with another product`;
       $('price-note').hidden = false;
     }
 
@@ -248,13 +248,13 @@
     });
 
     $('add-to-cart').addEventListener('click', () => {
-      PicasoCart.add(product.category, quantity);
+      PicasoCart.add(product._id, quantity);
       trackAddToCart();
       PicasoLayout.openCart();
     });
 
     $('buy-now').addEventListener('click', () => {
-      PicasoCart.add(product.category, quantity);
+      PicasoCart.add(product._id, quantity);
       trackAddToCart();
       window.location.href = '/checkout.html';
     });

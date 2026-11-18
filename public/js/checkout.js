@@ -134,7 +134,7 @@
     }
 
     const offer = upsells[0];
-    const label = offer.category === 'roller' ? 'Add derma roller' : 'Add Minoxidil';
+    const label = offer.title ? `Add ${offer.title}` : 'Add one more item';
 
     box.replaceChildren(
       el('p', { class: 'upsell-text' }, offer.message),
@@ -183,7 +183,7 @@
       $('sum-delivery').textContent = data.isFreeDelivery ? 'Free' : money(data.deliveryCharge);
       $('sum-total').textContent = money(data.total);
       $('delivery-note').textContent = data.isFreeDelivery
-        ? 'Free delivery on 3 or more Minoxidil.'
+        ? 'Free delivery applied to your order.'
         : (isInsideDhaka ? 'Delivery inside Dhaka.' : 'Delivery outside Dhaka.');
 
       if (!checkoutStarted) {

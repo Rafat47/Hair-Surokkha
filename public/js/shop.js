@@ -38,7 +38,7 @@
   }
 
   function addToCart(product, quantity) {
-    PicasoCart.add(product.category, quantity);
+    PicasoCart.add(product._id, quantity);
     trackAddToCart(product, quantity);
   }
 
