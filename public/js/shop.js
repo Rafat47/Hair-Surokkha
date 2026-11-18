@@ -75,11 +75,16 @@
     }
     refreshQty();
 
-    const imageBox = el('div', { class: 'product-image' },
-      product.images && product.images[0]
-        ? [el('img', { src: product.images[0], alt: product.title, loading: 'lazy' })]
-        : []
-    );
+    // Image and title link to this product's detail page.
+    const productHref = `/product.html?id=${encodeURIComponent(product._id)}`;
+
+    const imageBox = el('a', { class: 'product-image-link', href: productHref }, [
+      el('div', { class: 'product-image' },
+        product.images && product.images[0]
+          ? [el('img', { src: product.images[0], alt: product.title, loading: 'lazy' })]
+          : []
+      )
+    ]);
 
     const priceRow = el('div', { class: 'price-row' }, [
       el('span', { class: 'price-regular' }, money(product.regularPrice)),
@@ -89,7 +94,9 @@
     const children = [
       imageBox,
       el('div', { class: 'product-body' }, [
-        el('h2', { class: 'product-title' }, product.title),
+        el('h2', { class: 'product-title' }, [
+          el('a', { class: 'product-title-link', href: productHref }, product.title)
+        ]),
         priceRow
       ])
     ];
