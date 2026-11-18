@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thank you | Picaso</title>
+    <meta name="robots" content="noindex" />
+
+    <!-- Meta Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () {
+                n.callMethod ?
+                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1722516656187525');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=1722516656187525&ev=PageView&noscript=1" /></noscript>
+    <!-- End Meta Pixel Code -->
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/thank-you.css" />
+</head>
+
+<body>
+    <main class="container thanks-page">
+
+        <div class="thanks-head">
+            <p class="eyebrow">Order placed</p>
+            <h1>Thank you for your order</h1>
+            <p>We have received your order and will confirm it by phone soon.</p>
+        </div>
+
+        <div class="thanks-card" id="thanks-card">
+            <p class="thanks-loading" id="thanks-loading">Loading your order...</p>
+
+            <div id="thanks-details" hidden>
+                <div class="thanks-meta">
+                    <div>
+                        <span class="meta-label">Order number</span>
+                        <strong id="order-number"></strong>
+                    </div>
+                    <div>
+                        <span class="meta-label">Status</span>
+                        <strong id="order-status"></strong>
+                    </div>
+                </div>
+
+                <h2>Order summary</h2>
+                <div id="order-items"></div>
+
+                <div class="summary-totals">
+                    <div class="summary-line"><span>Subtotal</span><strong id="order-subtotal"></strong></div>
+                    <div class="summary-line"><span>Delivery</span><strong id="order-delivery"></strong></div>
+                    <div class="summary-line summary-total"><span>Total</span><strong id="order-total"></strong></div>
+                </div>
+            </div>
+
+            <p class="thanks-message" id="thanks-message" hidden></p>
+        </div>
+
+        <div class="thanks-actions">
+            <a href="/shop.html" class="btn btn-primary">Continue shopping</a>
+            <a href="/" class="btn btn-outline">Back to home</a>
+        </div>
+
+    </main>
+
+    <script src="/js/tracking.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/layout.js"></script>
+    <script src="/js/thank-you.js"></script>
+</body>
+
+</html>

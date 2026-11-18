@@ -1,0 +1,268 @@
+/* ===== Admin panel styles (uses color variables from /css/style.css) ===== */
+[hidden] {
+    display: none !important;
+}
+
+body.admin-body {
+    background: #f4f5f7;
+    min-height: 100vh;
+    margin: 0;
+    display: block;
+}
+
+/* ===== Login page ===== */
+.login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    box-shadow: var(--shadow);
+}
+
+.login-card h1 {
+    font-size: 26px;
+    margin-bottom: 6px;
+}
+
+.login-card .login-sub {
+    font-size: 14px;
+    color: var(--color-muted);
+    margin: 0 0 24px;
+}
+
+/* ===== Forms ===== */
+.field {
+    margin-bottom: 16px;
+}
+
+.field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin-bottom: 6px;
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--color-ink);
+    background: var(--color-white);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 0;
+}
+
+.field-hint {
+    font-size: 12px;
+    color: var(--color-muted);
+    margin: 6px 0 0;
+}
+
+.form-message {
+    font-size: 14px;
+    min-height: 20px;
+    margin: 0 0 14px;
+    color: var(--color-danger);
+}
+
+.form-message.success {
+    color: #1e7e46;
+}
+
+.form-message:empty {
+    display: none;
+}
+
+.login-card .btn {
+    width: 100%;
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: var(--color-white);
+    border-color: var(--color-danger);
+}
+
+.btn-sm {
+    padding: 7px 12px;
+    font-size: 13px;
+}
+
+/* ===== Shell: sidebar + content ===== */
+.admin-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    background: var(--color-ink);
+    color: var(--color-footer-text);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.admin-brand {
+    color: var(--color-white);
+    font-size: 22px;
+    font-weight: 800;
+    padding: 0 12px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 16px;
+}
+
+.admin-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.admin-nav a {
+    color: var(--color-footer-text);
+    padding: 11px 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.admin-nav a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-white);
+}
+
+.admin-nav a.active {
+    background: var(--color-white);
+    color: var(--color-ink);
+}
+
+.admin-user {
+    margin-top: auto;
+    font-size: 13px;
+    padding: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-user p {
+    margin: 0 0 10px;
+    color: var(--color-footer-text);
+    word-break: break-all;
+}
+
+.admin-user .btn {
+    width: 100%;
+    background: transparent;
+    color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.admin-main {
+    padding: 32px 36px;
+    min-width: 0;
+}
+
+.page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.page-head h1 {
+    font-size: 28px;
+    margin: 0;
+}
+
+/* ===== Dashboard cards ===== */
+.dash-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.dash-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    color: var(--color-text);
+    display: block;
+    transition: box-shadow 0.2s;
+}
+
+.dash-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.dash-card h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.dash-card p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 860px) {
+    .admin-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-sidebar {
+        position: static;
+        height: auto;
+        padding: 16px;
+    }
+
+    .admin-brand {
+        padding-bottom: 12px;
+        margin-bottom: 10px;
+    }
+
+    .admin-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .admin-user {
+        margin-top: 12px;
+        border-top: none;
+        padding: 0;
+    }
+
+    .admin-main {
+        padding: 24px 18px;
+    }
+
+    .dash-grid {
+        grid-template-columns: 1fr;
+    }
+}

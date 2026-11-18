@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product | Picaso</title>
+    <meta name="description" content="Picaso product details, reviews and pricing." />
+
+    <!-- Meta Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () {
+                n.callMethod ?
+                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '1722516656187525');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+            src="https://www.facebook.com/tr?id=1722516656187525&ev=PageView&noscript=1" /></noscript>
+    <!-- End Meta Pixel Code -->
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/shop.css" />
+    <link rel="stylesheet" href="/css/product.css" />
+</head>
+
+<body>
+    <main class="container product-page">
+
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="/">Home</a> <span>/</span>
+            <a href="/shop.html">Shop</a> <span>/</span>
+            <span id="crumb-title">Product</span>
+        </nav>
+
+        <p class="shop-status" id="product-status">Loading product...</p>
+
+        <section class="product-layout" id="product-layout" hidden>
+
+            <!-- Left: gallery -->
+            <div class="gallery">
+                <div class="gallery-main" id="gallery-main"></div>
+                <div class="gallery-thumbs" id="gallery-thumbs"></div>
+            </div>
+
+            <!-- Right: buy box -->
+            <div class="buy-box">
+                <h1 id="product-title"></h1>
+
+                <div class="rating-summary">
+                    <span class="stars" id="summary-stars" aria-hidden="true"></span>
+                    <span id="summary-text">No reviews yet</span>
+                </div>
+
+                <div class="price-row">
+                    <span class="price-regular" id="price-regular"></span>
+                    <span class="price-sale" id="price-sale"></span>
+                </div>
+                <p class="price-note" id="price-note" hidden></p>
+
+                <div class="card-qty-row">
+                    <label>Quantity</label>
+                    <div class="qty">
+                        <button type="button" class="qty-btn" id="qty-minus"
+                            aria-label="Decrease quantity">&minus;</button>
+                        <span id="qty-value">1</span>
+                        <button type="button" class="qty-btn" id="qty-plus" aria-label="Increase quantity">+</button>
+                    </div>
+                </div>
+
+                <div class="buy-actions">
+                    <button type="button" class="btn btn-outline btn-block" id="add-to-cart">Add to Cart</button>
+                    <button type="button" class="btn btn-primary btn-block" id="buy-now">Buy Now</button>
+                </div>
+
+                <ul class="buy-points">
+                    <li>Cash on delivery across Bangladesh</li>
+                    <li>Free delivery with 3 or more Minoxidil</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Description -->
+        <section class="product-section" id="product-details" hidden>
+            <h2>Product description</h2>
+            <div class="description" id="product-description"></div>
+        </section>
+
+        <!-- Reviews -->
+        <section class="product-section" id="reviews" hidden>
+            <h2>Customer reviews</h2>
+
+            <div class="reviews-layout">
+                <div>
+                    <div class="review-list" id="review-list"></div>
+                </div>
+
+                <form class="review-form" id="review-form" novalidate>
+                    <h3>Write a review</h3>
+
+                    <label for="review-name">Your name</label>
+                    <input type="text" id="review-name" name="name" maxlength="60" required />
+
+                    <label for="review-rating">Rating</label>
+                    <select id="review-rating" name="rating" required>
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Good</option>
+                        <option value="3">3 - Okay</option>
+                        <option value="2">2 - Poor</option>
+                        <option value="1">1 - Very poor</option>
+                    </select>
+
+                    <label for="review-comment">Your review</label>
+                    <textarea id="review-comment" name="comment" rows="4" maxlength="1000" required></textarea>
+
+                    <button type="submit" class="btn btn-primary" id="review-submit">Submit review</button>
+                    <p class="form-message" id="review-message" role="status"></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- Related products -->
+        <section class="product-section" id="related" hidden>
+            <h2>You may also like</h2>
+            <div class="product-grid" id="related-grid"></div>
+        </section>
+
+    </main>
+
+    <script src="/js/tracking.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/layout.js"></script>
+    <script src="/js/product.js"></script>
+</body>
+
+</html>

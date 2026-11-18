@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Settings | Picaso Admin</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/admin/css/admin.css" />
+    <link rel="stylesheet" href="/admin/css/settings.css" />
+</head>
+
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar" id="admin-sidebar"></aside>
+
+        <div class="admin-main">
+            <div class="page-head">
+                <h1>Settings</h1>
+            </div>
+
+            <p class="form-message" id="page-message" role="status"></p>
+
+            <form id="settings-form" novalidate>
+
+                <section class="settings-card">
+                    <h2>Delivery</h2>
+                    <div class="settings-grid">
+                        <div class="field">
+                            <label for="deliveryInsideDhaka">Inside Dhaka, Tk</label>
+                            <input id="deliveryInsideDhaka" type="number" min="0" step="1" />
+                            <p class="field-error" id="err-deliveryInsideDhaka"></p>
+                        </div>
+                        <div class="field">
+                            <label for="deliveryOutsideDhaka">Outside Dhaka, Tk</label>
+                            <input id="deliveryOutsideDhaka" type="number" min="0" step="1" />
+                            <p class="field-error" id="err-deliveryOutsideDhaka"></p>
+                        </div>
+                        <div class="field full">
+                            <label for="freeDeliveryMinMinoxidil">Free delivery when buying this many Minoxidil or
+                                more</label>
+                            <input id="freeDeliveryMinMinoxidil" type="number" min="1" step="1" />
+                            <p class="field-hint">Shop text and the FAQ say 3 or more. If you change this number, update
+                                those pages too.</p>
+                            <p class="field-error" id="err-freeDeliveryMinMinoxidil"></p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-card">
+                    <h2>Minoxidil bundle prices</h2>
+                    <p class="field-hint">One bottle uses the sale price on the Products page.</p>
+                    <div class="settings-grid">
+                        <div class="field">
+                            <label for="minoxidilTwoPiecePrice">2 bottles total, Tk</label>
+                            <input id="minoxidilTwoPiecePrice" type="number" min="0" step="1" />
+                            <p class="field-error" id="err-minoxidilTwoPiecePrice"></p>
+                        </div>
+                        <div class="field">
+                            <label for="minoxidilThreePiecePrice">3 bottles total, Tk</label>
+                            <input id="minoxidilThreePiecePrice" type="number" min="0" step="1" />
+                            <p class="field-hint">Each bottle after 3 adds the single-bottle sale price.</p>
+                            <p class="field-error" id="err-minoxidilThreePiecePrice"></p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="settings-card">
+                    <h2>Meta tracking</h2>
+                    <div class="settings-grid">
+                        <div class="field">
+                            <label for="metaPixelId">Meta Pixel ID</label>
+                            <input id="metaPixelId" type="text" inputmode="numeric" maxlength="20" />
+                            <p class="field-hint">The pixel ID is also written into the page code. Change it there too
+                                if it ever changes.</p>
+                            <p class="field-error" id="err-metaPixelId"></p>
+                        </div>
+                        <div class="field">
+                            <label for="currency">Currency</label>
+                            <input id="currency" type="text" disabled />
+                            <p class="field-hint">Fixed to BDT. All events and prices use it.</p>
+                        </div>
+                        <div class="field full">
+                            <label for="metaCapiToken">Conversion API token</label>
+                            <input id="metaCapiToken" type="password" autocomplete="off"
+                                placeholder="Paste a new token to replace the saved one" maxlength="500" />
+                            <p class="token-status" id="token-status"></p>
+                            <label class="checkbox-row">
+                                <input id="clearToken" type="checkbox" />
+                                Remove the saved token
+                            </label>
+                            <p class="field-error" id="err-metaCapiToken"></p>
+                        </div>
+                        <div class="field full">
+                            <label for="metaTestEventCode">Test event code (leave empty for live)</label>
+                            <input id="metaTestEventCode" type="text" maxlength="40" placeholder="e.g. TEST12345" />
+                            <p class="field-hint">Use this only while testing in Meta Events Manager. Clear it before
+                                going live, or server events will not count for ads.</p>
+                            <p class="field-error" id="err-metaTestEventCode"></p>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="settings-actions">
+                    <button type="submit" class="btn btn-primary" id="save-button">Save settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/admin/js/admin-layout.js"></script>
+    <script src="/admin/js/settings.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,142 @@
+/* ===== Thank-you page ===== */
+[hidden] {
+    display: none !important;
+}
+
+.eyebrow {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 10px;
+}
+
+.thanks-page {
+    padding-top: 48px;
+    padding-bottom: 20px;
+    max-width: 760px;
+}
+
+.thanks-head {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.thanks-head h1 {
+    font-size: clamp(28px, 4vw, 38px);
+    margin-bottom: 12px;
+}
+
+.thanks-head p {
+    margin: 0;
+}
+
+.thanks-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 28px;
+}
+
+.thanks-loading,
+.thanks-message {
+    text-align: center;
+    color: var(--color-muted);
+    padding: 20px 0;
+    margin: 0;
+}
+
+.thanks-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+    flex-wrap: wrap;
+}
+
+.meta-label {
+    display: block;
+    font-size: 13px;
+    color: var(--color-muted);
+    margin-bottom: 4px;
+}
+
+.thanks-meta strong {
+    color: var(--color-ink);
+    font-size: 17px;
+}
+
+.thanks-card h2 {
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+.order-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.order-line-title {
+    font-weight: 600;
+    color: var(--color-ink);
+}
+
+.order-line-detail {
+    font-size: 13px;
+    color: var(--color-muted);
+    margin-top: 2px;
+}
+
+.order-line-total {
+    font-weight: 700;
+    color: var(--color-ink);
+    white-space: nowrap;
+}
+
+.summary-totals {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: var(--color-text);
+}
+
+.summary-line strong {
+    color: var(--color-ink);
+}
+
+.summary-total {
+    font-size: 18px;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border);
+}
+
+.summary-total strong {
+    font-size: 20px;
+}
+
+.thanks-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+@media (max-width: 480px) {
+    .thanks-card {
+        padding: 20px;
+    }
+}

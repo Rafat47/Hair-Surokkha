@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Orders | Picaso Admin</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/admin/css/admin.css" />
+    <link rel="stylesheet" href="/admin/css/orders.css" />
+</head>
+
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar" id="admin-sidebar"></aside>
+
+        <div class="admin-main">
+            <div class="page-head">
+                <h1>Orders</h1>
+            </div>
+
+            <div class="toolbar">
+                <select id="status-filter" aria-label="Filter by status">
+                    <option value="">All statuses</option>
+                </select>
+
+                <form id="search-form" class="search-form">
+                    <input id="search-input" type="search" placeholder="Search order number, name or phone"
+                        maxlength="100" />
+                    <button type="submit" class="btn btn-outline btn-sm">Search</button>
+                    <button type="button" class="btn btn-outline btn-sm" id="clear-search">Clear</button>
+                </form>
+            </div>
+
+            <p class="form-message" id="page-message" role="status"></p>
+
+            <div class="table-wrap">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th class="num">Total</th>
+                            <th>Meta</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-body"></tbody>
+                </table>
+            </div>
+
+            <div class="pager">
+                <button type="button" class="btn btn-outline btn-sm" id="prev-page">Previous</button>
+                <span id="page-info"></span>
+                <button type="button" class="btn btn-outline btn-sm" id="next-page">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order details window -->
+    <div class="modal" id="order-modal" hidden>
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-head">
+                <h2 id="modal-title">Order details</h2>
+                <button type="button" class="icon-btn" id="modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="/admin/js/admin-layout.js"></script>
+    <script src="/admin/js/orders.js"></script>
+</body>
+
+</html>

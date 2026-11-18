@@ -1,0 +1,251 @@
+/* ===== Hero ===== */
+.hero {
+    position: relative;
+    min-height: calc(100vh - var(--header-height));
+    min-height: calc(100dvh - var(--header-height));
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--color-ink);
+}
+
+.hero-bg,
+.hero-bg img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-bg img {
+    object-fit: cover;
+}
+
+.hero-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(17, 20, 24, 0.85) 0%, rgba(17, 20, 24, 0.4) 100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    padding-top: 60px;
+    padding-bottom: 60px;
+    max-width: 680px;
+}
+
+.hero h1 {
+    color: var(--color-white);
+    font-size: clamp(32px, 5vw, 56px);
+    margin-bottom: 18px;
+}
+
+.hero-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 18px;
+    margin: 0 0 30px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.btn-light {
+    background: var(--color-white);
+    color: var(--color-ink);
+    border-color: var(--color-white);
+}
+
+.btn-outline-light {
+    background: transparent;
+    color: var(--color-white);
+    border-color: var(--color-white);
+}
+
+.eyebrow {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 10px;
+}
+
+.hero .eyebrow {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ===== Sections ===== */
+.section {
+    padding: 80px 0;
+}
+
+.section-alt {
+    background: #f6f7f9;
+}
+
+.section-head {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 40px;
+}
+
+.section-head h2 {
+    font-size: clamp(26px, 3.5vw, 36px);
+}
+
+.split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: center;
+}
+
+.split h2 {
+    font-size: clamp(24px, 3vw, 32px);
+    margin-bottom: 14px;
+}
+
+.split p {
+    margin: 0 0 14px;
+}
+
+.split .eyebrow+h2 {
+    margin-top: 0;
+}
+
+.split-text .eyebrow+h2+p+.eyebrow {
+    margin-top: 28px;
+}
+
+.split-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.split-images img,
+.before-after img,
+.split-images img {
+    width: 100%;
+    height: 100%;
+    min-height: 240px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    background: var(--color-border);
+}
+
+/* ===== Before / After ===== */
+.before-after {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.before-after figure {
+    margin: 0;
+}
+
+.before-after img {
+    aspect-ratio: 3 / 4;
+    height: auto;
+    min-height: 0;
+}
+
+.before-after figcaption {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 600;
+    color: var(--color-ink);
+}
+
+/* ===== How to use ===== */
+.steps {
+    padding-left: 22px;
+    margin: 0;
+    color: var(--color-text);
+}
+
+.steps li {
+    margin-bottom: 14px;
+    padding-left: 6px;
+}
+
+.steps strong {
+    color: var(--color-ink);
+}
+
+/* ===== FAQ ===== */
+.faq {
+    max-width: 820px;
+}
+
+.faq details {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 12px;
+}
+
+.faq summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-ink);
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.faq summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq summary::after {
+    content: "+";
+    font-size: 22px;
+    line-height: 1;
+    color: var(--color-ink);
+}
+
+.faq details[open] summary::after {
+    content: "\2212";
+}
+
+.faq details p {
+    margin: 12px 0 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 860px) {
+    .split {
+        grid-template-columns: 1fr;
+        gap: 36px;
+    }
+
+    .before-after {
+        grid-template-columns: 1fr;
+        max-width: 380px;
+        margin: 0 auto;
+    }
+
+    .section {
+        padding: 56px 0;
+    }
+}
+
+@media (max-width: 520px) {
+    .split-images {
+        grid-template-columns: 1fr;
+    }
+
+    .split-images img {
+        min-height: 200px;
+    }
+}
