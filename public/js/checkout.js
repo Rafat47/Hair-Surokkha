@@ -74,10 +74,10 @@
 
   // ===== Tracking =====
   // Fired once per page load, after the server confirms the cart total.
-    // Fired once per page load. The browser pixel and the server both get the same eventId.
+  // Fired once per page load. The browser pixel and the server both get the same eventId.
   function trackInitiateCheckout(cart) {
     PicasoTracking.track('InitiateCheckout', {
-      content_ids: cart.items.map(i => i.category),
+      content_ids: cart.items.map(i => i.productId),
       content_type: 'product',
       value: cart.total,
       currency: CURRENCY,
@@ -102,7 +102,7 @@
             class: 'qty-btn',
             'aria-label': 'Decrease quantity',
             disabled: line.quantity <= 1,
-            onclick: () => PicasoCart.changeQuantity(line.category, -1)
+            onclick: () => PicasoCart.changeQuantity(line.productId, -1)
           }, '\u2212'),
           el('span', {}, String(line.quantity)),
           el('button', {
@@ -110,20 +110,20 @@
             class: 'qty-btn',
             'aria-label': 'Increase quantity',
             disabled: line.quantity >= 99,
-            onclick: () => PicasoCart.changeQuantity(line.category, 1)
+            onclick: () => PicasoCart.changeQuantity(line.productId, 1)
           }, '+')
         ]),
         el('div', { class: 'cart-line-total' }, money(line.lineTotal)),
         el('button', {
           type: 'button',
           class: 'link-btn',
-          onclick: () => PicasoCart.remove(line.category)
+          onclick: () => PicasoCart.remove(line.productId)
         }, 'Remove')
       ])
     ]);
   }
 
-  // Shows the first upsell offered by the server
+  // Shows the first suggestion offered by the server
   function renderUpsell(upsells) {
     const box = $('upsell-box');
 
@@ -134,15 +134,14 @@
     }
 
     const offer = upsells[0];
-    const label = offer.category === 'roller' ? 'Add derma roller' : 'Add Minoxidil';
 
     box.replaceChildren(
       el('p', { class: 'upsell-text' }, offer.message),
       el('button', {
         type: 'button',
         class: 'btn btn-outline btn-block',
-        onclick: () => PicasoCart.add(offer.category, 1)
-      }, label)
+        onclick: () => PicasoCart.add(offer.productId, 1)
+      }, 'Add to cart')
     );
     box.hidden = false;
   }

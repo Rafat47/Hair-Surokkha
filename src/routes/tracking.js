@@ -1,6 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const Product = require('../models/Product');
+const productStore = require('../services/productStore');
 const { calculateCart } = require('../services/pricing');
 const { sendTrackingEvent, requestUserData } = require('../services/metaCapi');
 
@@ -34,12 +33,10 @@ function safePath(value) {
   return typeof value === 'string' && value.startsWith('/') && value.length <= 300 ? value : '/';
 }
 
-// AddToCart: the product ID comes from the browser, but the price comes from the database.
+// AddToCart: the product ID comes from the browser, but the price comes from the server.
 async function buildAddToCart(data) {
   const productId = Array.isArray(data.content_ids) ? String(data.content_ids[0] || '') : '';
-  if (!mongoose.Types.ObjectId.isValid(productId)) return null;
-
-  const product = await Product.findOne({ _id: productId, isActive: true }).lean();
+  const product = productStore.getActiveById(productId);
   if (!product) return null;
 
   const qty = toQty(data.num_items);
@@ -48,17 +45,17 @@ async function buildAddToCart(data) {
     currency: 'BDT',
     value: product.salePrice * qty,
     content_type: 'product',
-    content_ids: [product.category],
-    contents: [{ id: product.category, quantity: qty, item_price: product.salePrice }],
+    content_ids: [product._id],
+    contents: [{ id: product._id, quantity: qty, item_price: product.salePrice }],
     num_items: qty
   };
 }
 
-// InitiateCheckout: the server recalculates the full cart, including bundle rules and delivery.
+// InitiateCheckout: the server recalculates the whole cart.
 async function buildInitiateCheckout(data) {
   const items = (Array.isArray(data.items) ? data.items : [])
-    .filter(i => i && ['minoxidil', 'roller'].includes(i.category))
-    .map(i => ({ category: i.category, quantity: toQty(i.quantity) }));
+    .filter(i => i && i.productId)
+    .map(i => ({ productId: String(i.productId), quantity: toQty(i.quantity) }));
 
   if (!items.length) return null;
 
@@ -70,15 +67,14 @@ async function buildInitiateCheckout(data) {
     currency: cart.currency,
     value: cart.total,
     content_type: 'product',
-    content_ids: cart.items.map(i => i.category),
-    contents: cart.items.map(i => ({ id: i.category, quantity: i.quantity, item_price: i.unitPrice })),
+    content_ids: cart.items.map(i => i.productId),
+    contents: cart.items.map(i => ({ id: i.productId, quantity: i.quantity, item_price: i.unitPrice })),
     num_items: cart.items.reduce((sum, i) => sum + i.quantity, 0)
   };
 }
 
 // POST /api/tracking/event
-// Body: { eventName: 'AddToCart' | 'InitiateCheckout', eventId, path, data }
-// The browser sends the same eventId it gives to the Meta pixel, so Meta counts each action once.
+// Body: { eventName, eventId, path, data }
 router.post('/event', async (req, res) => {
   const { eventName, eventId, path, data } = req.body || {};
 

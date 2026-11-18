@@ -1,8 +1,18 @@
-// All prices are calculated on the server.
-// The browser sends only product categories and quantities.
+// Pricing for the whole cart. Works for any product.
+//
+// 1. A product is charged its sale price.
+// 2. Bundle price (optional, per product): if the cart also holds a different product,
+//    each unit of this product is charged the bundle price.
+// 3. Products in the "minoxidil" category use the quantity prices in Settings:
+//    2 bottles total, 3 bottles total, and each extra bottle at the sale price.
+// 4. Delivery is free when the cart has enough minoxidil bottles (Settings).
 
-const Product = require('../models/Product');
 const Settings = require('../models/Settings');
+const productStore = require('./productStore');
+
+const MINOXIDIL = 'minoxidil';
+const MAX_QTY_PER_PRODUCT = 99;
+const MAX_SUGGESTIONS = 1;
 
 async function getSettings() {
   let settings = await Settings.findOne({ key: 'main' });
@@ -12,130 +22,104 @@ async function getSettings() {
   return settings;
 }
 
-// Minoxidil price for a given quantity.
-// 1 piece = salePrice, 2 pieces = 2-piece price, 3 pieces = 3-piece price,
-// every piece after 3 = salePrice added to the 3-piece price.
-function minoxidilTotal(quantity, minoxidilProduct, settings) {
-  const unit = minoxidilProduct.salePrice;
-  if (quantity <= 0) return 0;
-  if (quantity === 1) return unit;
+function minoxidilTotal(quantity, salePrice, settings) {
+  if (quantity === 1) return salePrice;
   if (quantity === 2) return settings.minoxidilTwoPiecePrice;
-  return settings.minoxidilThreePiecePrice + (quantity - 3) * unit;
+  return settings.minoxidilThreePiecePrice + (quantity - 3) * salePrice;
 }
 
-// Roller price: bundlePrice when minoxidil is in the cart, otherwise salePrice.
-function rollerTotal(quantity, rollerProduct, hasMinoxidil) {
-  if (quantity <= 0) return 0;
-  const unit = hasMinoxidil && rollerProduct.bundlePrice != null
-    ? rollerProduct.bundlePrice
-    : rollerProduct.salePrice;
-  return unit * quantity;
-}
-
-// Discount percentage shown in upsells.
-// x = ((regular_price - sale_price) / regular_price) * 100
-// Roller: base price is salePrice, offer price is bundlePrice.
-function offerPercent(product) {
-  if (product.category === 'roller' && product.bundlePrice != null) {
-    const base = product.salePrice;
-    return Math.round(((base - product.bundlePrice) / base) * 100);
+// product: database product, quantity: total quantity in cart,
+// picked: all distinct products in the cart (used for the bundle rule)
+function priceLine(product, quantity, picked, settings) {
+  if (product.category === MINOXIDIL) {
+    const lineTotal = minoxidilTotal(quantity, product.salePrice, settings);
+    return { unitPrice: Math.round(lineTotal / quantity), lineTotal };
   }
-  const base = product.regularPrice;
-  return Math.round(((base - product.salePrice) / base) * 100);
+
+  const bundled = product.bundlePrice != null && picked.length > 1;
+  const unitPrice = bundled ? product.bundlePrice : product.salePrice;
+  return { unitPrice, lineTotal: unitPrice * quantity };
 }
 
-function deliveryFor(minoxidilQty, isInsideDhaka, settings) {
-  if (minoxidilQty >= settings.freeDeliveryMinMinoxidil) return 0;
-  return isInsideDhaka ? settings.deliveryInsideDhaka : settings.deliveryOutsideDhaka;
-}
-
-function upsellFor(minoxidilQty, rollerQty, minoxidil, roller) {
+// Suggests one product that has a bundle price and is not in the cart yet.
+function suggestionsFor(cartIds, catalog) {
   const suggestions = [];
+  if (cartIds.size === 0) return suggestions;
 
-  if (minoxidilQty > 0 && rollerQty === 0 && roller) {
+  for (const product of catalog) {
+    if (suggestions.length >= MAX_SUGGESTIONS) break;
+    if (cartIds.has(product._id)) continue;
+    if (product.category === MINOXIDIL) continue;
+    if (product.bundlePrice == null || !product.salePrice) continue;
+
+    const pct = Math.round(((product.salePrice - product.bundlePrice) / product.salePrice) * 100);
+    if (pct <= 0) continue;
+
     suggestions.push({
-      category: 'roller',
-      message: `Add a derma roller to get ${offerPercent(roller)}% off`
+      productId: product._id,
+      message: `Add ${product.title} to get ${pct}% off`
     });
   }
-
-  if (rollerQty > 0 && minoxidilQty === 0 && minoxidil) {
-    suggestions.push({
-      category: 'minoxidil',
-      message: `Add another product to get ${offerPercent(minoxidil)}% off`
-    });
-  }
-
   return suggestions;
 }
 
-// Input: [{ category: 'minoxidil' | 'roller', quantity: number }]
-// Output: full cart breakdown with items, subtotal, delivery and total.
+// cartItems: [{ productId, quantity }]
 async function calculateCart(cartItems, isInsideDhaka) {
   const settings = await getSettings();
 
-  const [minoxidil, roller] = await Promise.all([
-    Product.findOne({ category: 'minoxidil', isActive: true }),
-    Product.findOne({ category: 'roller', isActive: true })
-  ]);
-
-  let minoxidilQty = 0;
-  let rollerQty = 0;
-
+  // Merge repeated product IDs and clean quantities
+  const quantities = new Map();
   for (const item of cartItems || []) {
-    const qty = Math.max(0, parseInt(item.quantity, 10) || 0);
-    if (item.category === 'minoxidil') minoxidilQty += qty;
-    if (item.category === 'roller') rollerQty += qty;
+    const id = String((item && item.productId) || '');
+    const qty = Math.max(0, parseInt(item && item.quantity, 10) || 0);
+    if (!id || !qty) continue;
+    quantities.set(id, Math.min(MAX_QTY_PER_PRODUCT, (quantities.get(id) || 0) + qty));
   }
 
-  const items = [];
-
-  if (minoxidilQty > 0 && minoxidil) {
-    const lineTotal = minoxidilTotal(minoxidilQty, minoxidil, settings);
-    items.push({
-      category: 'minoxidil',
-      title: minoxidil.title,
-      quantity: minoxidilQty,
-      unitPrice: Math.round(lineTotal / minoxidilQty),
-      lineTotal
-    });
+  // Only active products that exist are charged
+  const picked = [];
+  for (const [id, quantity] of quantities) {
+    const product = productStore.getActiveById(id);
+    if (product) picked.push({ product, quantity });
   }
 
-  if (rollerQty > 0 && roller) {
-    const hasMinoxidil = minoxidilQty > 0;
-    const unitPrice = hasMinoxidil && roller.bundlePrice != null
-      ? roller.bundlePrice
-      : roller.salePrice;
-    items.push({
-      category: 'roller',
-      title: roller.title,
-      quantity: rollerQty,
-      unitPrice,
-      lineTotal: rollerTotal(rollerQty, roller, hasMinoxidil)
-    });
+  const items = picked.map(({ product, quantity }) => {
+    const priced = priceLine(product, quantity, picked, settings);
+    return {
+      productId: product._id,
+      category: product.category,
+      title: product.title,
+      quantity,
+      unitPrice: priced.unitPrice,
+      lineTotal: priced.lineTotal
+    };
+  });
+
+  const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+
+  const minoxidilQty = items
+    .filter(item => item.category === MINOXIDIL)
+    .reduce((sum, item) => sum + item.quantity, 0);
+
+  const isFreeDelivery = items.length > 0 && minoxidilQty >= settings.freeDeliveryMinMinoxidil;
+
+  let deliveryCharge = 0;
+  if (items.length > 0 && !isFreeDelivery) {
+    deliveryCharge = isInsideDhaka ? settings.deliveryInsideDhaka : settings.deliveryOutsideDhaka;
   }
 
-  const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
-  const deliveryCharge = items.length
-    ? deliveryFor(minoxidilQty, isInsideDhaka, settings)
-    : 0;
+  const cartIds = new Set(picked.map(p => p.product._id));
+  const upsells = suggestionsFor(cartIds, productStore.getActive());
 
   return {
     items,
     subtotal,
     deliveryCharge,
     total: subtotal + deliveryCharge,
-    isFreeDelivery: items.length > 0 && deliveryCharge === 0,
-    upsells: upsellFor(minoxidilQty, rollerQty, minoxidil, roller),
+    isFreeDelivery,
+    upsells,
     currency: settings.currency
   };
 }
 
-module.exports = {
-  getSettings,
-  calculateCart,
-  offerPercent,
-  minoxidilTotal,
-  rollerTotal,
-  deliveryFor
-};
+module.exports = { getSettings, calculateCart };

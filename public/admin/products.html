@@ -19,12 +19,17 @@
         <div class="admin-main">
             <div class="page-head">
                 <h1>Products</h1>
+                <button type="button" class="btn btn-primary" id="new-product-button">Add product</button>
             </div>
 
-            <p class="page-intro">Edit the text, prices and images shown on the shop. Changes appear on the site as soon
-                as you save.</p>
+            <p class="page-intro">Add, edit or delete products. Changes are saved to the database and the shop updates
+                right away.</p>
 
             <p class="form-message" id="page-message" role="status"></p>
+
+            <section id="new-product-wrap" hidden>
+                <div id="new-product-slot"></div>
+            </section>
 
             <div id="product-list"></div>
         </div>

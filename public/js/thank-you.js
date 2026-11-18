@@ -70,7 +70,7 @@
   // If the page is reloaded, Meta sees the same eventID and does not count it again.
   function trackPurchase(order) {
     PicasoTracking.track('Purchase', {
-      content_ids: order.items.map(i => i.category),
+      content_ids: order.items.map(i => i.productId),
       content_type: 'product',
       value: order.total,
       currency: CURRENCY,

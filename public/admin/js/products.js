@@ -1,9 +1,12 @@
-// Admin products page: one card per product with an edit form.
-// Saves through PUT /api/admin/products/:id. Images can be uploaded or entered as links.
+// Admin products page: add, edit and delete any product.
+// Every field is required. Products are saved through /api/admin/products.
 
 (function () {
   const listEl = document.getElementById('product-list');
   const pageMessage = document.getElementById('page-message');
+  const newButton = document.getElementById('new-product-button');
+  const newWrap = document.getElementById('new-product-wrap');
+  const newSlot = document.getElementById('new-product-slot');
 
   function el(tag, attrs = {}, children = []) {
     const node = document.createElement(tag);
@@ -26,10 +29,17 @@
     pageMessage.className = 'form-message' + (type ? ' ' + type : '');
   }
 
-  function makeInput(type, value, extra = {}) {
-    const node = el('input', Object.assign({ type }, extra));
-    node.value = value == null ? '' : value;
-    return node;
+  function val(value) {
+    return value == null ? '' : value;
+  }
+
+  function isAuthError(err) {
+    return err.message === 'Not logged in';
+  }
+
+  function firstError(err) {
+    if (err.data && err.data.errors) return Object.values(err.data.errors)[0];
+    return err.message;
   }
 
   function field(labelText, control, className = '') {
@@ -37,14 +47,6 @@
       el('label', {}, labelText),
       control
     ]);
-  }
-
-  // Same rule as the checkout upsell (pricing.js offerPercent)
-  function upsellPercent(category, regular, sale, bundle) {
-    if (category === 'roller') {
-      return sale > 0 ? Math.round(((sale - bundle) / sale) * 100) : 0;
-    }
-    return regular > 0 ? Math.round(((regular - sale) / regular) * 100) : 0;
   }
 
   async function uploadImage(file) {
@@ -67,43 +69,45 @@
     return data.url;
   }
 
-  function productCard(product) {
-    const isRoller = product.category === 'roller';
+  function closeNewForm() {
+    newWrap.hidden = true;
+    newSlot.replaceChildren();
+  }
 
-    const titleInput = makeInput('text', product.title, { maxlength: 120 });
+  // Builds one card. product = null means a new product.
+  function buildForm(product) {
+    const isNew = !product;
+    let current = product;
 
-    const descInput = el('textarea', { rows: 4, maxlength: 5000 });
-    descInput.value = product.description || '';
+    const inputs = {
+      category: el('input', { type: 'text', maxlength: 40, placeholder: 'e.g. minoxidil, cream, soap' }),
+      title: el('input', { type: 'text', maxlength: 120 }),
+      description: el('textarea', { rows: 4, maxlength: 5000 }),
+      regularPrice: el('input', { type: 'number', min: 0, step: 1 }),
+      salePrice: el('input', { type: 'number', min: 0, step: 1 }),
+      bundlePrice: el('input', { type: 'number', min: 0, step: 1 }),
+      images: el('textarea', { rows: 3, placeholder: '/uploads/your-image.jpg' }),
+      isActive: el('input', { type: 'checkbox' })
+    };
 
-    const regularInput = makeInput('number', product.regularPrice, { min: 0, step: 1 });
-    const saleInput = makeInput('number', product.salePrice, { min: 0, step: 1 });
-    const bundleInput = makeInput('number', product.bundlePrice, { min: 0, step: 1 });
+    inputs.category.value = val(current && current.category);
+    inputs.title.value = val(current && current.title);
+    inputs.description.value = val(current && current.description);
+    inputs.regularPrice.value = val(current && current.regularPrice);
+    inputs.salePrice.value = val(current && current.salePrice);
+    inputs.bundlePrice.value = val(current && current.bundlePrice);
+    inputs.images.value = ((current && current.images) || []).join('\n');
+    inputs.isActive.checked = isNew ? true : current.isActive !== false;
 
-    const imagesInput = el('textarea', { rows: 3 });
-    imagesInput.value = (product.images || []).join('\n');
-
-    const activeInput = el('input', { type: 'checkbox' });
-    activeInput.checked = product.isActive !== false;
-
-    // Live upsell hint
-    const hint = el('p', { class: 'hint-pill' });
-    function updateHint() {
-      const regular = Number(regularInput.value);
-      const sale = Number(saleInput.value);
-      const bundle = Number(bundleInput.value);
-      const pct = upsellPercent(product.category, regular, sale, bundle);
-
-      hint.textContent = isRoller
-        ? `Shown at checkout when a customer has Minoxidil: "Add a derma roller to get ${pct}% off"`
-        : `Shown at checkout when a customer has Derma Roller: "Add another product to get ${pct}% off"`;
-    }
-    [regularInput, saleInput, bundleInput].forEach(input => input.addEventListener('input', updateHint));
-    updateHint();
+    const heading = el('h2', {}, isNew ? 'New product' : current.title);
+    inputs.title.addEventListener('input', () => {
+      heading.textContent = inputs.title.value.trim() || 'Untitled';
+    });
 
     // Thumbnail shows the first image
     const thumb = el('img', { class: 'product-admin-thumb', alt: '' });
     function updateThumb() {
-      const first = imagesInput.value.split('\n').map(s => s.trim()).find(Boolean);
+      const first = inputs.images.value.split('\n').map(s => s.trim()).find(Boolean);
       if (first) {
         thumb.src = first;
         thumb.hidden = false;
@@ -113,9 +117,9 @@
       }
     }
     updateThumb();
-    imagesInput.addEventListener('input', updateThumb);
+    inputs.images.addEventListener('input', updateThumb);
 
-    // Image upload: adds the uploaded path to the image list
+    // Upload adds the new image path to the list
     const fileInput = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp' });
     const uploadStatus = el('p', { class: 'field-hint' });
     fileInput.addEventListener('change', async () => {
@@ -125,95 +129,152 @@
       uploadStatus.textContent = 'Uploading...';
       try {
         const url = await uploadImage(file);
-        const current = imagesInput.value.split('\n').map(s => s.trim()).filter(Boolean);
+        const current = inputs.images.value.split('\n').map(s => s.trim()).filter(Boolean);
         current.push(url);
-        imagesInput.value = current.join('\n');
+        inputs.images.value = current.join('\n');
         updateThumb();
         uploadStatus.textContent = 'Image added. Click Save to keep it.';
       } catch (err) {
-        if (err.message !== 'Not logged in') uploadStatus.textContent = err.message;
+        if (!isAuthError(err)) uploadStatus.textContent = err.message;
       } finally {
         fileInput.value = '';
       }
     });
 
     const message = el('p', { class: 'form-message' });
-    const saveButton = el('button', { type: 'button', class: 'btn btn-primary' }, 'Save changes');
 
-    saveButton.addEventListener('click', async () => {
-      const payload = {
-        title: titleInput.value,
-        description: descInput.value,
-        regularPrice: regularInput.value,
-        salePrice: saleInput.value,
-        bundlePrice: isRoller ? bundleInput.value : null,
-        images: imagesInput.value.split('\n').map(s => s.trim()).filter(Boolean),
-        isActive: activeInput.checked
+    function payload() {
+      return {
+        category: inputs.category.value.trim(),
+        title: inputs.title.value.trim(),
+        description: inputs.description.value.trim(),
+        regularPrice: inputs.regularPrice.value,
+        salePrice: inputs.salePrice.value,
+        bundlePrice: inputs.bundlePrice.value,
+        images: inputs.images.value.split('\n').map(s => s.trim()).filter(Boolean),
+        isActive: inputs.isActive.checked
       };
+    }
 
-      saveButton.disabled = true;
-      saveButton.textContent = 'Saving...';
+    const saveButton = el('button', {
+      type: 'button',
+      class: 'btn btn-primary',
+      onclick: () => save()
+    }, isNew ? 'Add product' : 'Save changes');
+
+    const deleteButton = isNew ? null : el('button', {
+      type: 'button',
+      class: 'btn btn-danger btn-sm',
+      onclick: () => removeProduct()
+    }, 'Delete product');
+
+    const cancelButton = isNew ? el('button', {
+      type: 'button',
+      class: 'btn btn-outline btn-sm',
+      onclick: () => closeNewForm()
+    }, 'Cancel') : null;
+
+    async function save() {
       message.className = 'form-message';
       message.textContent = '';
+      saveButton.disabled = true;
+      saveButton.textContent = 'Saving...';
 
       try {
-        await AdminApi.put(`/api/admin/products/${encodeURIComponent(product._id)}`, payload);
-        message.classList.add('success');
-        message.textContent = 'Saved.';
+        if (isNew) {
+          const data = await AdminApi.post('/api/admin/products', payload());
+          setPageMessage(`"${data.product.title}" was added.`, 'success');
+          closeNewForm();
+          await loadProducts();
+        } else {
+          const data = await AdminApi.put(`/api/admin/products/${encodeURIComponent(current._id)}`, payload());
+          current = data.product;
+          heading.textContent = current.title;
+          message.classList.add('success');
+          message.textContent = 'Saved.';
+        }
       } catch (err) {
-        const errors = err.data && err.data.errors;
-        message.textContent = errors ? Object.values(errors)[0] : err.message;
+        if (!isAuthError(err)) message.textContent = firstError(err);
       } finally {
         saveButton.disabled = false;
-        saveButton.textContent = 'Save changes';
+        saveButton.textContent = isNew ? 'Add product' : 'Save changes';
       }
-    });
+    }
 
-    const headTitle = el('div', { class: 'product-admin-title' }, [
-      el('h2', {}, product.title),
-      el('p', {}, isRoller ? 'Derma Roller' : 'Minoxidil')
-    ]);
-    titleInput.addEventListener('input', () => {
-      headTitle.querySelector('h2').textContent = titleInput.value || 'Untitled';
-    });
+    async function removeProduct() {
+      if (!confirm(`Delete "${current.title}"? This cannot be undone.`)) return;
+
+      deleteButton.disabled = true;
+      try {
+        await AdminApi.del(`/api/admin/products/${encodeURIComponent(current._id)}`);
+        setPageMessage(`"${current.title}" was deleted.`, 'success');
+        await loadProducts();
+      } catch (err) {
+        deleteButton.disabled = false;
+        if (!isAuthError(err)) message.textContent = firstError(err);
+      }
+    }
+
+    const statusText = isNew
+      ? 'Not saved yet'
+      : (current.isActive !== false ? 'Shown on the shop' : 'Hidden from the shop');
 
     return el('article', { class: 'product-admin-card' }, [
-      el('div', { class: 'product-admin-head' }, [thumb, headTitle]),
+      el('div', { class: 'product-admin-head' }, [
+        thumb,
+        el('div', { class: 'product-admin-title' }, [heading, el('p', {}, statusText)])
+      ]),
 
       el('div', { class: 'product-admin-grid' }, [
-        field('Title', titleInput, 'full'),
-        field('Description', descInput, 'full'),
-        field('Regular price (crossed out), Tk', regularInput),
-        field('Sale price, Tk', saleInput),
-        isRoller ? field('Bundle price with Minoxidil, Tk', bundleInput) : null,
-        el('div', { class: 'full' }, [hint]),
-        field('Image links (one per line)', imagesInput, 'full'),
+        field('Category (any name you choose)', inputs.category),
+        field('Title', inputs.title),
+        field('Description', inputs.description, 'full'),
+        field('Regular price (crossed out), Tk', inputs.regularPrice),
+        field('Sale price, Tk', inputs.salePrice),
+        field('Bundle price, Tk (optional)', inputs.bundlePrice),
+        el('div', { class: 'field-hint full' }, 'Bundle price is optional. Leave it empty if this product has no bundle. When a customer buys it together with another product, the bundle price is charged.'),
+        field('Image links (one per line)', inputs.images, 'full'),
         el('div', { class: 'field full' }, [
           el('label', {}, 'Upload an image (JPG, PNG or WebP, max 3 MB)'),
           el('div', { class: 'upload-row' }, [fileInput]),
           uploadStatus
         ]),
-        el('label', { class: 'checkbox-row full' }, [activeInput, 'Show this product on the shop'])
+        el('label', { class: 'checkbox-row full' }, [inputs.isActive, 'Show this product on the shop'])
       ]),
 
-      el('div', { class: 'card-footer' }, [message, saveButton])
+      el('div', { class: 'card-footer' }, [
+        message,
+        el('div', { class: 'card-buttons' }, [cancelButton, deleteButton, saveButton].filter(Boolean))
+      ])
     ]);
   }
 
-  async function load() {
+  async function loadProducts() {
     try {
       const data = await AdminApi.get('/api/admin/products');
-      if (!data.products || !data.products.length) {
-        listEl.replaceChildren(el('p', {}, 'No products yet.'));
+
+      if (!data.products.length) {
+        listEl.replaceChildren(el('p', {}, 'No products yet. Click "Add product" to create one.'));
         return;
       }
-      listEl.replaceChildren(...data.products.map(productCard));
+
+      listEl.replaceChildren(...data.products.map(buildForm));
     } catch (err) {
-      if (err.message !== 'Not logged in') {
+      if (!isAuthError(err)) {
         setPageMessage('Could not load products: ' + err.message, 'error');
       }
     }
   }
 
-  load();
+  newButton.addEventListener('click', () => {
+    if (!newWrap.hidden) {
+      closeNewForm();
+      return;
+    }
+    newSlot.replaceChildren(buildForm(null));
+    newWrap.hidden = false;
+    newWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  loadProducts();
 })();

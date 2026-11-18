@@ -110,6 +110,7 @@ async function saveOrderResult(orderId, result) {
 }
 
 // Purchase for one order. Never throws, so checkout is not blocked.
+// Purchase for one order. Never throws, so checkout is not blocked.
 async function sendPurchaseEvent(order) {
   try {
     const event = {
@@ -124,9 +125,9 @@ async function sendPurchaseEvent(order) {
         value: order.total,
         order_id: order.orderNumber,
         content_type: 'product',
-        content_ids: order.items.map(item => item.category),
+        content_ids: order.items.map(item => item.productId),
         contents: order.items.map(item => ({
-          id: item.category,
+          id: item.productId,
           quantity: item.quantity,
           item_price: item.unitPrice
         })),
@@ -142,7 +143,7 @@ async function sendPurchaseEvent(order) {
     await Order.updateOne(
       { _id: order._id },
       { $set: { 'capi.purchaseStatus': 'failed', 'capi.purchaseError': err.message } }
-    ).catch(() => {});
+    ).catch(() => { });
   }
 }
 

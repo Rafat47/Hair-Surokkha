@@ -4,7 +4,8 @@ const STATUSES = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', '
 
 const orderItemSchema = new mongoose.Schema(
   {
-    category: { type: String, enum: ['minoxidil', 'roller'], required: true },
+    productId: { type: String, required: true },
+    category: { type: String, default: '' },
     title: { type: String, required: true },
     quantity: { type: Number, required: true, min: 1 },
     // Unit price actually charged, after bundle rules

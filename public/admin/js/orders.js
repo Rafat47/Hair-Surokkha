@@ -38,7 +38,7 @@
   }
 
   function itemsText(items) {
-    return items.map(i => `${i.quantity} x ${PRODUCT_LABELS[i.category] || i.category}`).join(', ');
+    return items.map(i => `${i.quantity} x ${PRODUCT_LABELS[i.title] || i.title}`).join(', ');
   }
 
   function isAuthError(err) {
@@ -165,7 +165,7 @@
     ]);
 
     const items = order.items.map(item => el('div', { class: 'detail-line' }, [
-      el('span', {}, `${PRODUCT_LABELS[item.category] || item.category} x ${item.quantity} (${money(item.unitPrice)} each)`),
+      el('span', {}, `${PRODUCT_LABELS[item.title] || item.title} x ${item.quantity} (${money(item.unitPrice)} each)`),
       el('strong', {}, money(item.lineTotal))
     ]));
 

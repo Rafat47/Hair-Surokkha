@@ -21,6 +21,7 @@ const adminAuthRouter = require('./src/routes/adminAuth');
 const adminProductsRouter = require('./src/routes/adminProducts');
 const adminOrdersRouter = require('./src/routes/adminOrders');
 const adminSettingsRouter = require('./src/routes/adminSettings');
+const productStore = require('./src/services/productStore');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -106,6 +107,7 @@ app.use((err, req, res, next) => {
 async function start() {
   await connectDB();
   await seedDefaults();
+  await productStore.init();
   await ensureAdminAccount();
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

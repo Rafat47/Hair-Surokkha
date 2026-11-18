@@ -1,5 +1,5 @@
 // Cart stored in the browser (localStorage).
-// It holds only categories and quantities. Prices always come from the server.
+// It holds only product IDs and quantities. Prices always come from the server.
 
 (function () {
   const KEY = 'picaso_cart';
@@ -9,7 +9,8 @@
     try {
       const raw = localStorage.getItem(KEY);
       const items = raw ? JSON.parse(raw) : [];
-      return Array.isArray(items) ? items : [];
+      // Ignore old entries from before products had IDs
+      return Array.isArray(items) ? items.filter(i => i && i.productId) : [];
     } catch (err) {
       return [];
     }
@@ -35,33 +36,33 @@
       return read().reduce((sum, item) => sum + item.quantity, 0);
     },
 
-    add(category, quantity = 1) {
+    add(productId, quantity = 1) {
       const items = read();
-      const existing = items.find(i => i.category === category);
+      const existing = items.find(i => i.productId === productId);
       if (existing) {
         existing.quantity = clampQty(existing.quantity + quantity);
       } else {
-        items.push({ category, quantity: clampQty(quantity) });
+        items.push({ productId, quantity: clampQty(quantity) });
       }
       write(items);
     },
 
-    setQuantity(category, quantity) {
+    setQuantity(productId, quantity) {
       const items = read().map(i =>
-        i.category === category ? { ...i, quantity: clampQty(quantity) } : i
+        i.productId === productId ? { ...i, quantity: clampQty(quantity) } : i
       );
       write(items);
     },
 
     // delta is +1 or -1. Quantity never goes below 1 here. Use remove() to delete.
-    changeQuantity(category, delta) {
-      const item = read().find(i => i.category === category);
+    changeQuantity(productId, delta) {
+      const item = read().find(i => i.productId === productId);
       if (!item) return;
-      Cart.setQuantity(category, item.quantity + delta);
+      Cart.setQuantity(productId, item.quantity + delta);
     },
 
-    remove(category) {
-      write(read().filter(i => i.category !== category));
+    remove(productId) {
+      write(read().filter(i => i.productId !== productId));
     },
 
     clear() {

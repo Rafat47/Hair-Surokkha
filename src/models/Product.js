@@ -2,24 +2,15 @@ const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema(
   {
-    // 'minoxidil' or 'roller'. Pricing rules depend on this.
-    category: {
-      type: String,
-      enum: ['minoxidil', 'roller'],
-      required: true,
-      unique: true
-    },
-    title: { type: String, required: true, trim: true },
-    description: { type: String, default: '' },
-    // Image paths or URLs, shown in the product gallery
+    category: { type: String, required: true, trim: true, maxlength: 40 },
+    title: { type: String, required: true, trim: true, maxlength: 120 },
+    description: { type: String, required: true, trim: true, maxlength: 5000 },
     images: { type: [String], default: [] },
-    // Crossed-out price shown on the shop
     regularPrice: { type: Number, required: true, min: 0 },
-    // Price for one piece (what the customer pays alone)
     salePrice: { type: Number, required: true, min: 0 },
-    // Only for the roller: price when bought together with minoxidil (190 Tk)
+    // Optional. null means this product has no bundle price.
     bundlePrice: { type: Number, default: null, min: 0 },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, required: true, default: true }
   },
   { timestamps: true }
 );

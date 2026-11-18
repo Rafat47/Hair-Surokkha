@@ -160,12 +160,12 @@
       ]),
       el('div', { class: 'cart-line-side' }, [
         el('div', { class: 'qty' }, [
-          qtyButton('\u2212', () => PicasoCart.changeQuantity(line.category, -1), line.quantity <= 1),
+          qtyButton('\u2212', () => PicasoCart.changeQuantity(line.productId, -1), line.quantity <= 1),
           el('span', {}, String(line.quantity)),
-          qtyButton('+', () => PicasoCart.changeQuantity(line.category, 1), false)
+          qtyButton('+', () => PicasoCart.changeQuantity(line.productId, 1), false)
         ]),
         el('div', { class: 'cart-line-total' }, money(line.lineTotal)),
-        el('button', { type: 'button', class: 'link-btn', onclick: () => PicasoCart.remove(line.category) }, 'Remove')
+        el('button', { type: 'button', class: 'link-btn', onclick: () => PicasoCart.remove(line.productId) }, 'Remove')
       ])
     ]);
   }
