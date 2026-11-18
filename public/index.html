@@ -51,6 +51,32 @@
             </div>
         </section>
 
+        <!-- Product Carousel (cards come from the database) -->
+        <section class="section section-alt" id="products">
+            <div class="container">
+                <div class="section-head">
+                    <p class="eyebrow">Our products</p>
+                    <h2>Shop everything we offer</h2>
+                    <p>Browse our available products. New items appear here automatically.</p>
+                </div>
+
+                <div class="carousel" id="product-carousel">
+                    <button type="button" class="carousel-arrow carousel-prev" aria-label="Previous products">&#8249;</button>
+
+                    <div class="carousel-viewport">
+                        <div class="carousel-track" id="carousel-track">
+                            <!-- Cards are injected here by /js/home-carousel.js -->
+                            <div class="carousel-status">Loading products&hellip;</div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="carousel-arrow carousel-next" aria-label="Next products">&#8250;</button>
+                </div>
+
+                <div class="carousel-dots" id="carousel-dots"></div>
+            </div>
+        </section>
+
         <!-- Problem / Solution -->
         <section class="section">
             <div class="container split">
@@ -163,6 +189,7 @@
     <script src="/js/tracking.js"></script>
     <script src="/js/cart.js"></script>
     <script src="/js/layout.js"></script>
+    <script src="/js/home-carousel.js"></script>
 </body>
 
 </html>
