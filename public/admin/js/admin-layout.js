@@ -73,11 +73,14 @@
     });
     user.append(logout);
 
-    sidebar.replaceChildren(
-      Object.assign(document.createElement('div'), { className: 'admin-brand', textContent: 'Picaso Admin' }),
-      nav,
-      user
-    );
+    const brand = Object.assign(document.createElement('a'), {
+      className: 'admin-brand',
+      textContent: 'Picaso Admin',
+      href: '/',
+      title: 'Go to store home page'
+    });
+
+    sidebar.replaceChildren(brand, nav, user);
   }
 
   async function loadCurrentAdmin() {
