@@ -4,7 +4,10 @@ const STATUSES = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', '
 
 const orderItemSchema = new mongoose.Schema(
   {
-    category: { type: String, enum: ['minoxidil', 'roller'], required: true },
+    // 'minoxidil' and 'roller' have bundle rules. 'other' is any product added
+    // from the admin panel. Older orders keep the title of the product they held.
+    category: { type: String, enum: ['minoxidil', 'roller', 'other'], required: true },
+    productId: { type: mongoose.Schema.Types.ObjectId, default: null },
     title: { type: String, required: true },
     quantity: { type: Number, required: true, min: 1 },
     // Unit price actually charged, after bundle rules
