@@ -81,7 +81,7 @@
 
 /* ===== Sections ===== */
 .section {
-    padding: 80px 0;
+    padding: 30px 0;
 }
 
 .section-alt {
@@ -249,6 +249,7 @@
         min-height: 200px;
     }
 }
+
 /* ===== Home product carousel ===== */
 .carousel {
     --carousel-gap: 20px;
@@ -262,7 +263,8 @@
     overflow: hidden;
     flex: 1;
     padding: 6px 2px 14px;
-    touch-action: pan-y; /* let us handle horizontal swiping ourselves */
+    touch-action: pan-y;
+    /* let us handle horizontal swiping ourselves */
 }
 
 .carousel-track {
