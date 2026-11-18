@@ -1,10 +1,10 @@
 // Home page product carousel.
 // Loads every available (active) product from /api/products, renders one card
 // per product, and auto-scrolls the cards from left to right (right to left).
-// The Buy button adds the product to the cart and goes straight to checkout.
+// Each card is a full-image square that links to the product detail page;
+// the product name is shown under the card.
 
 (function () {
-  const CURRENCY = 'BDT';
   const AUTOPLAY_MS = 3500;   // pause between slides
   const SCROLL_MS = 650;      // slide animation duration
   const GAP = 20;             // must match --carousel-gap in home.css
@@ -34,62 +34,26 @@
     return node;
   }
 
-  function money(amount) {
-    return `${Number(amount || 0).toLocaleString('en-US')} Tk`;
-  }
-
-  function shortDescription(text) {
-    const clean = (text || '').trim();
-    if (!clean) return '';
-    return clean.length > 110 ? clean.slice(0, 107).trimEnd() + '\u2026' : clean;
-  }
-
   function buildCard(product) {
-    const imageBox = el('div', { class: 'carousel-card-image' },
-      product.images && product.images[0]
-        ? [el('img', { src: product.images[0], alt: product.title, loading: 'lazy' })]
-        : []
-    );
+    const href = `/product.html?id=${encodeURIComponent(product._id)}`;
 
-    const priceRow = el('div', { class: 'carousel-card-price' }, [
-      el('span', { class: 'price-regular' }, money(product.regularPrice)),
-      el('span', { class: 'price-sale' }, money(product.salePrice))
+    // The whole card is the product image and links to the product page.
+    const imageLink = el('a', { class: 'carousel-card-image-link', href }, [
+      el('div', { class: 'carousel-card-image' },
+        product.images && product.images[0]
+          ? [el('img', { src: product.images[0], alt: product.title, loading: 'lazy' })]
+          : []
+      )
     ]);
 
-    // Buy button sits in the right corner of the card footer
-    const buyBtn = el('button', {
-      type: 'button',
-      class: 'btn btn-primary carousel-buy',
-      onclick: () => {
-        PicasoCart.add(product.category, 1);
-        if (window.PicasoTracking) {
-          PicasoTracking.track('AddToCart', {
-            content_ids: [product._id],
-            content_type: 'product',
-            content_name: product.title,
-            value: product.salePrice,
-            currency: CURRENCY,
-            num_items: 1
-          });
-        }
-        window.location.href = '/checkout.html';
-      }
-    }, 'Buy');
+    // Product name shown below the card.
+    const name = el('a', {
+      class: 'carousel-card-name',
+      href,
+      title: product.title
+    }, product.title);
 
-    const footer = el('div', { class: 'carousel-card-footer' }, [
-      el('a', { class: 'carousel-card-link', href: `/product.html?id=${encodeURIComponent(product._id)}` }, 'Details'),
-      buyBtn
-    ]);
-
-    return el('article', { class: 'carousel-card' }, [
-      imageBox,
-      el('div', { class: 'carousel-card-body' }, [
-        el('h3', { class: 'carousel-card-title' }, product.title),
-        el('p', { class: 'carousel-card-desc' }, shortDescription(product.description)),
-        priceRow
-      ]),
-      footer
-    ]);
+    return el('article', { class: 'carousel-card' }, [imageLink, name]);
   }
 
   function cardStep() {
