@@ -89,7 +89,7 @@
 }
 
 .highlight-box {
-    background: #f6f7f9;
+    background: var(--color-background-secondary);
     border-radius: var(--radius);
     padding: 24px;
     margin-top: 28px;

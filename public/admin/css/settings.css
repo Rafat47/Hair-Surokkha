@@ -33,7 +33,7 @@
 }
 
 .settings-card input:disabled {
-    background: #f6f7f9;
+    background: var(--color-background-secondary);
     color: var(--color-muted);
 }
 
@@ -55,13 +55,13 @@
 }
 
 .token-status.ok {
-    background: #e8f5ee;
-    color: #1e7e46;
+    background: var(--color-surface-hover);
+    color: var(--color-success);
 }
 
 .token-status.warn {
-    background: #fff4e5;
-    color: #8a5300;
+    background: rgba(217, 145, 22, 0.12);
+    color: var(--color-warning);
 }
 
 .settings-actions {

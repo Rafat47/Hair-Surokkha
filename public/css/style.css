@@ -1,18 +1,51 @@
 /* ===== Color palette (change these variables to update the whole site) ===== */
 :root {
-    --color-ink: rgb(17, 20, 24);
-    /* heading text, buttons, footer background */
-    --color-text: rgb(68, 76, 87);
+    /* Brand colors */
+    --color-primary: #095CBC;
+    --color-primary-hover: #083F93;
+    --color-primary-light: #85B6E4;
+
+    --color-secondary: #101820;
+    --color-secondary-light: #3B73AD;
+
+    --color-accent: #C6283D;
+
+    /* Backgrounds */
+    --color-background: #FFFFFF;
+    --color-background-secondary: #F5F8FC;
+    --color-surface: #FFFFFF;
+    --color-surface-hover: #EDF4FB;
+
+    /* Text */
+    --color-text-primary: #101820;
+    --color-text-secondary: #596575;
+    --color-text-muted: #8B929B;
+    --color-text-inverse: #FFFFFF;
+
+    /* Borders */
+    --color-border: #DCE4ED;
+    --color-border-focus: #095CBC;
+
+    /* Status colors */
+    --color-success: #16834A;
+    --color-warning: #D99116;
+    --color-error: #D32F2F;
+    --color-info: #2476B9;
+
+    /* Legacy aliases used across the stylesheets (mapped to the new theme) */
+    --color-ink: var(--color-primary);
+    /* heading text, buttons */
+    --color-text: var(--color-text-secondary);
     /* paragraph text */
-    --color-white: #ffffff;
-    --color-bg: #ffffff;
-    --color-border: #e4e7eb;
-    --color-muted: #8a929c;
-    --color-danger: #c0392b;
+    --color-white: var(--color-text-inverse);
+    --color-bg: var(--color-background);
+    --color-surface-alt: var(--color-background-secondary);
+    --color-muted: var(--color-text-muted);
+    --color-danger: var(--color-error);
     --color-footer-text: #c9ced6;
 
     --radius: 10px;
-    --shadow: 0 10px 30px rgba(17, 20, 24, 0.12);
+    --shadow: 0 10px 30px rgba(16, 24, 32, 0.12);
     --container-width: 1200px;
     --header-height: 68px;
     --font-main: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", Arial, sans-serif;
@@ -105,13 +138,24 @@ img {
 }
 
 .btn-primary {
-    background: var(--color-ink);
+    background: var(--color-primary);
     color: var(--color-white);
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
 }
 
 .btn-outline {
     background: transparent;
-    color: var(--color-ink);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-outline:hover {
+    background: var(--color-surface-hover);
 }
 
 .btn-block {
@@ -138,14 +182,14 @@ img {
     font-family: inherit;
 }
 
-/* ===== Header ===== */
+/* ===== Header (navbar uses the primary brand color) ===== */
 .site-header {
     position: sticky;
     top: 0;
     z-index: 100;
     height: var(--header-height);
-    background: var(--color-white);
-    border-bottom: 1px solid var(--color-border);
+    background: var(--color-primary);
+    border-bottom: 1px solid var(--color-primary-hover);
 }
 
 .header-inner {
@@ -160,7 +204,7 @@ img {
     font-size: 22px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    color: var(--color-ink);
+    color: var(--color-white);
 }
 
 .site-nav {
@@ -171,15 +215,15 @@ img {
 .site-nav a {
     font-size: 15px;
     font-weight: 500;
-    color: var(--color-text);
+    color: var(--color-primary-light);
     padding: 6px 0;
     border-bottom: 2px solid transparent;
 }
 
 .site-nav a:hover,
 .site-nav a.active {
-    color: var(--color-ink);
-    border-bottom-color: var(--color-ink);
+    color: var(--color-white);
+    border-bottom-color: var(--color-white);
 }
 
 .header-actions {
@@ -193,7 +237,7 @@ img {
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--color-ink);
+    color: var(--color-white);
     padding: 6px;
     display: flex;
 }
@@ -211,7 +255,7 @@ img {
     height: 20px;
     padding: 0 5px;
     border-radius: 10px;
-    background: var(--color-ink);
+    background: var(--color-accent);
     color: var(--color-white);
     font-size: 12px;
     font-weight: 700;
@@ -233,12 +277,12 @@ img {
     display: block;
     width: 22px;
     height: 2px;
-    background: var(--color-ink);
+    background: var(--color-white);
 }
 
-/* ===== Footer ===== */
+/* ===== Footer (black) ===== */
 .site-footer {
-    background: var(--color-ink);
+    background: #000000;
     color: var(--color-footer-text);
     margin-top: 60px;
     padding: 48px 0 0;
@@ -288,7 +332,7 @@ img {
 .drawer-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(17, 20, 24, 0.5);
+    background: rgba(16, 24, 32, 0.5);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s;

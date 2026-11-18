@@ -4,7 +4,7 @@
 }
 
 body.admin-body {
-    background: #f4f5f7;
+    background: var(--color-background-secondary);
     min-height: 100vh;
     margin: 0;
     display: block;
@@ -69,7 +69,7 @@ body.admin-body {
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--color-border-focus);
     outline-offset: 0;
 }
 
@@ -87,7 +87,7 @@ body.admin-body {
 }
 
 .form-message.success {
-    color: #1e7e46;
+    color: var(--color-success);
 }
 
 .form-message:empty {

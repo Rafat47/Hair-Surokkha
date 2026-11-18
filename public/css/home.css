@@ -25,7 +25,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgba(17, 20, 24, 0.85) 0%, rgba(17, 20, 24, 0.4) 100%);
+    background: linear-gradient(90deg, rgba(16, 24, 32, 0.85) 0%, rgba(16, 24, 32, 0.4) 100%);
 }
 
 .hero-content {
@@ -85,7 +85,7 @@
 }
 
 .section-alt {
-    background: #f6f7f9;
+    background: var(--color-background-secondary);
 }
 
 .section-head {
@@ -284,7 +284,7 @@
 
 .carousel-card-image {
     aspect-ratio: 1 / 1;
-    background: #f1f3f5;
+    background: var(--color-background-secondary);
     overflow: hidden;
 }
 
@@ -397,7 +397,7 @@
     height: 10px;
     border-radius: 50%;
     border: none;
-    background: #cdd2d9;
+    background: var(--color-primary-light);
     cursor: pointer;
     padding: 0;
 }

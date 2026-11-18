@@ -25,7 +25,7 @@
     height: 110px;
     object-fit: cover;
     border-radius: 8px;
-    background: #f1f3f5;
+    background: var(--color-background-secondary);
     border: 1px solid var(--color-border);
     flex-shrink: 0;
 }
@@ -57,7 +57,7 @@
 }
 
 .hint-pill {
-    background: #f6f7f9;
+    background: var(--color-background-secondary);
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 14px;

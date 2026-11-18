@@ -48,7 +48,7 @@
 
 .product-image {
     aspect-ratio: 1 / 1;
-    background: #f1f3f5;
+    background: var(--color-background-secondary);
     overflow: hidden;
 }
 
