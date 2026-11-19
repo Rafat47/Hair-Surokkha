@@ -6,6 +6,7 @@
 const crypto = require('crypto');
 const Order = require('../models/Order');
 const { getSettings } = require('./pricing');
+const capiLogger = require('./capiLogger');
 
 const GRAPH_VERSION = 'v21.0';
 
@@ -64,11 +65,24 @@ function orderUserData(order) {
 }
 
 // Sends one or more events to Meta. Returns { status, error }.
+// Sends one event to Meta and records the attempt in capi_log (when logging is on).
 async function postToMeta(events) {
   const settings = await getSettings();
 
+  const first = events[0] || {};
+  const base = {
+    eventName: first.event_name || 'unknown',
+    eventId: first.event_id || '',
+    orderNumber: (first.custom_data && first.custom_data.order_id) || '',
+    pixelId: settings.metaPixelId,
+    testEventCode: settings.metaTestEventCode || '',
+    sentPayload: events
+  };
+
   if (!settings.metaCapiToken) {
-    return { status: 'skipped', error: 'Conversion API token is not set in admin settings' };
+    const error = 'Conversion API token is not set in admin settings';
+    await capiLogger.record(settings, { ...base, status: 'skipped', success: false, errorMessage: error });
+    return { status: 'skipped', error };
   }
 
   const body = { data: events };
@@ -76,24 +90,54 @@ async function postToMeta(events) {
     body.test_event_code = settings.metaTestEventCode;
   }
 
+  // The token goes in the URL, but the URL is never logged
   const url = `https://graph.facebook.com/${GRAPH_VERSION}/${settings.metaPixelId}/events` +
     `?access_token=${encodeURIComponent(settings.metaCapiToken)}`;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(10000)
-  });
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000)
+    });
 
-  const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => ({}));
+    const received = Number(data.events_received) || 0;
 
-  if (!res.ok || data.error) {
-    const message = data.error ? data.error.message : `HTTP ${res.status}`;
-    return { status: 'failed', error: message };
+    // Success means Meta answered without an error and confirmed at least one event
+    let errorMessage = '';
+    if (data.error) errorMessage = data.error.message;
+    else if (!res.ok) errorMessage = `HTTP ${res.status}`;
+    else if (received < 1) errorMessage = 'Meta did not confirm receiving the event';
+
+    const success = errorMessage === '';
+    const status = success ? 'sent' : 'failed';
+
+    await capiLogger.record(settings, {
+      ...base,
+      status,
+      success,
+      httpStatus: res.status,
+      eventsReceived: received,
+      fbtraceId: data.fbtrace_id || '',
+      errorMessage,
+      metaResponse: data
+    });
+
+    if (!success) console.error(`Meta CAPI ${base.eventName} failed:`, errorMessage);
+    return { status, error: errorMessage };
+  } catch (err) {
+    await capiLogger.record(settings, {
+      ...base,
+      status: 'failed',
+      success: false,
+      httpStatus: 0,
+      errorMessage: err.message
+    });
+    console.error(`Meta CAPI ${base.eventName} error:`, err.message);
+    return { status: 'failed', error: err.message };
   }
-
-  return { status: 'sent', error: '' };
 }
 
 async function saveOrderResult(orderId, result) {

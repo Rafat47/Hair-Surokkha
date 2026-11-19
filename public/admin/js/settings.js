@@ -44,6 +44,7 @@
       $(field).value = settings[field] ?? '';
     });
     $('currency').value = settings.currency || 'BDT';
+    $('capiLogEnabled').checked = Boolean(settings.capiLogEnabled);
     setTokenStatus(settings.hasCapiToken);
   }
 
@@ -54,6 +55,7 @@
     });
     data.metaCapiToken = $('metaCapiToken').value.trim();
     data.clearToken = $('clearToken').checked;
+    data.capiLogEnabled = $('capiLogEnabled').checked;
     return data;
   }
 
@@ -81,11 +83,10 @@
       const data = await AdminApi.put('/api/admin/settings', readForm());
       fill(data.settings);
 
-      // Clear the token box so it is not left on screen
       $('metaCapiToken').value = '';
       $('clearToken').checked = false;
 
-      setMessage('Settings saved. Delivery and bundle prices apply to new carts from now on.', 'success');
+      setMessage('Settings saved.', 'success');
     } catch (err) {
       if (err.data && err.data.errors) {
         showErrors(err.data.errors);

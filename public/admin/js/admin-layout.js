@@ -6,6 +6,7 @@
     { href: '/admin/index.html', label: 'Dashboard' },
     { href: '/admin/products.html', label: 'Products' },
     { href: '/admin/orders.html', label: 'Orders' },
+    { href: '/admin/capi-logs.html', label: 'CAPI Log' },
     { href: '/admin/settings.html', label: 'Settings' }
   ];
 

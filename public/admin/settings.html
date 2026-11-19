@@ -102,6 +102,16 @@
                         </div>
                     </div>
                 </section>
+                <section class="settings-card">
+                    <h2>Conversion API log</h2>
+                    <p class="field-hint">When on, every event sent to Meta is saved to the capi_log table, with what
+                        was sent and Meta's reply. Turn it off when you finish testing.</p>
+                    <label class="checkbox-row">
+                        <input id="capiLogEnabled" type="checkbox" />
+                        Save Conversion API log
+                    </label>
+                    <p class="field-hint"><a href="/admin/capi-logs.html">Open the CAPI log</a></p>
+                </section>
 
                 <div class="settings-actions">
                     <button type="submit" class="btn btn-primary" id="save-button">Save settings</button>

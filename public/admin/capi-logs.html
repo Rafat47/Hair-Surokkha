@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>CAPI Log | Picaso Admin</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/admin/css/admin.css" />
+    <link rel="stylesheet" href="/admin/css/orders.css" />
+</head>
+
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar" id="admin-sidebar"></aside>
+
+        <div class="admin-main">
+            <div class="page-head">
+                <h1>CAPI Log</h1>
+                <button type="button" class="btn btn-outline btn-sm" id="clear-logs">Clear log</button>
+            </div>
+
+            <p class="page-intro">Every event sent to Meta, what was sent, and Meta's reply. Logging is turned on or off
+                in Settings. Entries are kept for 30 days.</p>
+
+            <div class="toolbar">
+                <select id="status-filter" aria-label="Filter by result">
+                    <option value="">All results</option>
+                    <option value="sent">Sent</option>
+                    <option value="failed">Failed</option>
+                    <option value="skipped">Skipped</option>
+                </select>
+                <select id="event-filter" aria-label="Filter by event">
+                    <option value="">All events</option>
+                    <option value="Purchase">Purchase</option>
+                    <option value="AddToCart">AddToCart</option>
+                    <option value="InitiateCheckout">InitiateCheckout</option>
+                </select>
+            </div>
+
+            <p class="form-message" id="page-message" role="status"></p>
+
+            <div class="table-wrap">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Event</th>
+                            <th>Order</th>
+                            <th>Result</th>
+                            <th class="num">Meta received</th>
+                            <th>Error</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="pager">
+                <button type="button" class="btn btn-outline btn-sm" id="log-prev">Previous</button>
+                <span id="log-page-info"></span>
+                <button type="button" class="btn btn-outline btn-sm" id="log-next">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry details window -->
+    <div class="modal" id="log-modal" hidden>
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-head">
+                <h2 id="modal-title">Log entry</h2>
+                <button type="button" class="icon-btn" id="modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="/admin/js/admin-layout.js"></script>
+    <script src="/admin/js/capi-logs.js"></script>
+</body>
+
+</html>

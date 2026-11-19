@@ -21,6 +21,7 @@ function publicSettings(s) {
     minoxidilThreePiecePrice: s.minoxidilThreePiecePrice,
     metaPixelId: s.metaPixelId,
     metaTestEventCode: s.metaTestEventCode || '',
+    capiLogEnabled: Boolean(s.capiLogEnabled),
     currency: s.currency,
     hasCapiToken: Boolean(s.metaCapiToken)
   };
@@ -38,13 +39,6 @@ router.get('/', async (req, res) => {
 });
 
 // PUT /api/admin/settings
-// Body: {
-//   deliveryInsideDhaka, deliveryOutsideDhaka, freeDeliveryMinMinoxidil,
-//   minoxidilTwoPiecePrice, minoxidilThreePiecePrice,
-//   metaPixelId, metaTestEventCode,
-//   metaCapiToken (optional, leave empty to keep the saved token),
-//   clearToken (optional, true removes the saved token)
-// }
 router.put('/', async (req, res) => {
   try {
     const body = req.body || {};
@@ -94,7 +88,8 @@ router.put('/', async (req, res) => {
       minoxidilTwoPiecePrice,
       minoxidilThreePiecePrice,
       metaPixelId,
-      metaTestEventCode
+      metaTestEventCode,
+      capiLogEnabled: body.capiLogEnabled === true || body.capiLogEnabled === 'true'
     });
 
     if (body.clearToken === true || body.clearToken === 'true') {

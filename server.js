@@ -21,6 +21,7 @@ const adminAuthRouter = require('./src/routes/adminAuth');
 const adminProductsRouter = require('./src/routes/adminProducts');
 const adminOrdersRouter = require('./src/routes/adminOrders');
 const adminSettingsRouter = require('./src/routes/adminSettings');
+const adminCapiLogsRouter = require('./src/routes/adminCapiLogs');
 const productStore = require('./src/services/productStore');
 const { migrateProducts } = require('./src/services/migrateProducts');
 
@@ -73,6 +74,7 @@ app.use('/api/admin', adminAuthRouter);
 app.use('/api/admin/products', requireAdminApi, adminProductsRouter);
 app.use('/api/admin/orders', requireAdminApi, adminOrdersRouter);
 app.use('/api/admin/settings', requireAdminApi, adminSettingsRouter);
+app.use('/api/admin/capi-logs', requireAdminApi, adminCapiLogsRouter);
 
 // Shop API
 app.use('/api/products', productsRouter);

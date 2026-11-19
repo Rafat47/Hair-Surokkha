@@ -75,3 +75,18 @@
         grid-template-columns: 1fr;
     }
 }
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin: 8px 0;
+}
+
+.checkbox-row input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-ink);
+}
