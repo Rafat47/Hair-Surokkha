@@ -26,6 +26,9 @@ const productStore = require('./src/services/productStore');
 const { migrateProducts } = require('./src/services/migrateProducts');
 
 const app = express();
+// Required behind a host's proxy (Render, Railway, etc.) so the real visitor IP
+// is used and secure cookies work over HTTPS.
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
@@ -44,6 +47,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 8 * 60 * 60 * 1000 // 8 hours
   }
 }));

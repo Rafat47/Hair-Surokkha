@@ -1,3 +1,6 @@
+// Creates the two starter products and the settings document, but only when the
+// products collection is empty. Existing data is never overwritten.
+
 const Product = require('../models/Product');
 const Settings = require('../models/Settings');
 
@@ -9,21 +12,23 @@ async function seedDefaults() {
       {
         category: 'minoxidil',
         title: 'Kirkland Minoxidil 5% Solution',
-        description: '',
+        description: 'Starter product. Edit this description in the admin Products page.',
         images: [],
         regularPrice: 1000,
         salePrice: 830,
-        bundlePrice: 0,
+        businessLogic: 'quantity-pricing',
+        logicValues: { twoPrice: 1600, threePrice: 2400 },
         isActive: true
       },
       {
         category: 'roller',
         title: 'Derma Roller',
-        description: '',
+        description: 'Starter product. Edit this description in the admin Products page.',
         images: [],
         regularPrice: 280,
         salePrice: 230,
-        bundlePrice: 190,
+        businessLogic: 'bundle-price',
+        logicValues: { bundlePrice: 190 },
         isActive: true
       }
     ]);
