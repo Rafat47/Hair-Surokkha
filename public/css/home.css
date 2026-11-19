@@ -81,11 +81,34 @@
 
 /* ===== Sections ===== */
 .section {
-    padding: 30px 0;
+    padding: 80px 0;
 }
 
 .section-alt {
     background: var(--color-background-secondary);
+}
+
+/* Breathing room between stacked sections (e.g. Before/After and How to use) */
+.section+.section,
+.section+.section-alt,
+.section-alt+.section {
+    margin-top: 48px;
+}
+
+/* The product carousel hugs the hero: it overlaps the hero's bottom 30% and
+   has no big top/bottom margins of its own */
+.hero+#products {
+    position: relative;
+    z-index: 1;
+    margin-top: calc(-1 * (min(100vh, 100dvh) - var(--header-height)) * 0.3);
+    padding-top: 44px;
+    padding-bottom: 48px;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+}
+
+.hero+#products+.section {
+    margin-top: 0;
 }
 
 .section-head {
@@ -143,24 +166,43 @@
 .before-after {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+    gap: 24px;
 }
 
-.before-after figure {
+.before-after figure,
+.ba-card {
     margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Image wrapper keeps the caption below the image instead of overlapping it */
+.ba-image {
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--color-border);
+    box-shadow: var(--shadow);
 }
 
 .before-after img {
     aspect-ratio: 3 / 4;
+    width: 100%;
     height: auto;
     min-height: 0;
+    display: block;
+    object-fit: cover;
+    border-radius: 0;
 }
 
 .before-after figcaption {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 14px;
     font-weight: 600;
     color: var(--color-ink);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
 }
 
 /* ===== How to use ===== */
@@ -229,14 +271,37 @@
         gap: 36px;
     }
 
+    /* Keep images above the text on stacked layouts */
+    .start-early .split-images {
+        order: -1;
+    }
+
     .before-after {
         grid-template-columns: 1fr;
-        max-width: 380px;
+        gap: 28px;
+        max-width: 420px;
         margin: 0 auto;
+    }
+
+    .before-after figure,
+    .ba-card {
+        margin-bottom: 0;
     }
 
     .section {
         padding: 56px 0;
+    }
+
+    .hero+#products {
+        margin-top: calc(-1 * (min(100vh, 100dvh) - var(--header-height)) * 0.3);
+        padding-top: 32px;
+        padding-bottom: 36px;
+    }
+
+    .section+.section,
+    .section+.section-alt,
+    .section-alt+.section {
+        margin-top: 8px;
     }
 }
 
@@ -278,6 +343,41 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
+}
+
+/* Attention-grabbing blue gradient border that slowly slides from left to right */
+.carousel-card-image-link,
+.ba-image {
+    position: relative;
+    border: 2px solid transparent;
+    background:
+        linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+        linear-gradient(90deg,
+                var(--color-primary-light) 0%,
+                var(--color-primary) 25%,
+                #ffffff 50%,
+                var(--color-primary) 75%,
+                var(--color-primary-light) 100%) border-box;
+    background-size: 100% 100%, 300% 100%;
+    animation: card-border-flow 8s linear infinite;
+}
+
+@keyframes card-border-flow {
+    from {
+        background-position: 0 0, 0% 0;
+    }
+
+    to {
+        background-position: 0 0, 300% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .carousel-card-image-link,
+    .ba-image {
+        animation: none;
+    }
 }
 
 /* Desktop: the carousel starts (and centres) from the middle, not the left */

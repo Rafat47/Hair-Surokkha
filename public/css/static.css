@@ -107,6 +107,14 @@
     margin-top: 28px;
 }
 
+/* The generic `.static-page a` rule below would otherwise paint primary
+   buttons with the primary color (bg + text) - keep the label white. */
+.static-page .btn-primary,
+.static-page .btn-primary:hover {
+    color: var(--color-white);
+    text-decoration: none;
+}
+
 /* ===== Error pages ===== */
 .error-page {
     text-align: center;
